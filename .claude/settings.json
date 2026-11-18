@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "deny": [
+      "mcp__claude-in-chrome",
+      "mcp__Claude_Browser",
+      "mcp__remote-devices",
+      "mcp__computer-use",
+      "Bash(shopify theme open:*)",
+      "Bash(start:*)",
+      "Bash(explorer:*)",
+      "Bash(explorer.exe:*)",
+      "Bash(cmd /c start:*)",
+      "PowerShell(Start-Process:*)",
+      "PowerShell(start:*)",
+      "PowerShell(shopify theme open:*)"
+    ]
+  }
+}
