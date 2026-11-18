@@ -2,7 +2,7 @@
 
 This file collects every `[NEEDS CLARIFICATION]` from specs 001–007. Each item has a **proposed default**. Once the user approves, these answers are copied into each spec's "Clarifications log" and the specs are set to `Approved`.
 
-Status: **Awaiting user edits and approval**. The user is reviewing this file. Do not approve the specs or start planning until the user says so.
+Status: **A1, A2, A3, A5, A6 decided. All other defaults are awaiting final user approval.** The user will start building on 2026-11-20. Confirm the remaining defaults with the user before approving specs.
 
 ## Guiding principle (user, 2026-11-19)
 > Build a feature in the theme only when it can be built easily and works effectively there. Otherwise leave it for a Shopify app and don't build it now.
@@ -13,7 +13,7 @@ Practical test for each feature: it needs no secret keys, no server or database,
 |---|---|
 | Wishlist (hearts, page, count) | **App later.** The theme provides `@app` block slots plus a hidden header icon link. |
 | Pincode delivery check | **Skipped for now** |
-| EMI / pay-later line | **App, proposed.** Providers ship their own widget. Confirm in A6. |
+| EMI / pay-later line | **App, decided (A6).** |
 | Shoppable video | **Theme, proposed.** See A7–A9 |
 | Everything else (badges, swatches, carousels, tabs, banners, promo tiles, footer, floating cart, back to top, recently viewed) | Theme |
 
@@ -23,10 +23,10 @@ Practical test for each feature: it needs no secret keys, no server or database,
 |---|---|---|---|
 | A1 | Wishlist | **DECIDED: wishlist app later.** Not built. The theme keeps `@app` block slots (card media, PDP buy area) and a header heart icon linked to a merchant-set URL, hidden by default. | 002, 001, 006 |
 | A2 | Wishlist header count | **DECIDED: no theme count**. The app handles it. | 002, 001 |
-| A3 | Badge source | SOLD OUT is automatic (no variant available). ONLY FEW LEFT is automatic (total stock ≤ a threshold set in theme settings, default 5; tracked stock only). NEW and BESTSELLER come from product tags `badge:new` / `badge:bestseller`. Optional custom text from product metafield `custom.badge`. Priority: SOLD OUT > ONLY FEW LEFT > custom > NEW > BESTSELLER. The PDP uses the same source. | 002, 006 |
+| A3 | Badge source | **DECIDED (user, 2026-11-19).** SOLD OUT is automatic (no variant available). ONLY FEW LEFT is automatic (total stock ≤ a threshold set in theme settings, default 5; tracked stock only). NEW and BESTSELLER come from product tags `badge:new` / `badge:bestseller`. Optional custom text from product metafield `custom.badge`. Priority: SOLD OUT > ONLY FEW LEFT > custom > NEW > BESTSELLER. The PDP uses the same source. | 002, 006 |
 | A4 | Discount % rounding | Round to the nearest whole number (matches every mockup value). Used everywhere: cards, PDP, video tiles. | 002, 003, 006 |
 | A5 | Pincode check | **DECIDED: skipped for now.** No pincode block is built. | 006 |
-| A6 | EMI line | **Proposed: leave it to the pay-later provider's app.** Snapmint, Simpl and similar apps ship their own PDP widget as an app block, which drops into the `@app` slot in the buy area. (Alternative: a static text line with ₹price÷N and a link, which is easy but can show wrong terms.) | 006 |
+| A6 | EMI line | **DECIDED (user, 2026-11-19): leave it to the pay-later provider's app.** Not built in the theme. Snapmint, Simpl and similar apps ship their own PDP widget as an app block, which drops into the `@app` slot in the buy area. (Alternative: a static text line with ₹price÷N and a link, which is easy but can show wrong terms.) | 006 |
 | A7 | Video source | **Proposed: theme-native, using Shopify-hosted video.** See "Shoppable video proposal" below. | 003, 007 |
 | A8 | Video playback | **Tiles autoplay (user confirmed).** Tiles autoplay muted, looped and inline only while on screen, with at most 4 playing at once. With reduced motion or data-saver, a still poster shows instead. | 003 |
 | A9 | Video tile click | **CLARIFIED by user:** popup with one active, focused reel in the centre, previous and next reels peeking left and right behind it, Prev/Next buttons, and Add to cart. Spec 003 S4 has been rewritten to match. | 003 |

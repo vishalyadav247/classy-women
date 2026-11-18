@@ -88,7 +88,7 @@ Shoppers get a clear, image-led product page. On the left is a two-column grid o
   - Price, compare-at price, and the discount %, calculated from price and compare-at and rounded to a whole number.
   - EMI monthly amount, calculated from the current variant price. The mockup shows ₹3,239 / 4 ≈ ₹810. `[NEEDS CLARIFICATION]`
   - Selected option value (e.g. "Wine").
-  - Swatch thumbnails (variant images, or the swatch image / colour from the option value).
+  - Swatch thumbnails show **the variant's product photo** (confirmed by user), not a flat colour chip. The image priority is the same as spec 002 AC3.7: variant featured image → option-value swatch image → swatch colour → product featured image.
   - Variant availability.
 - **Layout (desktop):**
   - Title in uppercase, medium size.

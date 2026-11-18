@@ -134,6 +134,7 @@ Shoppers see the same consistent product card wherever products are listed: home
   - [ ] AC3.4 When there are more colours than the configured maximum, the extra ones are summarised by an overflow indicator and the row does not wrap.
   - [ ] AC3.5 The merchant can turn swatches on or off in the theme editor.
   - [ ] AC3.6 Each thumbnail has an accessible name equal to its colour value and can be operated with the keyboard.
+  - [ ] AC3.7 **Thumbnails show the variant's product photo, not a flat colour chip** (confirmed by user against the mockup). Image priority for each thumbnail: 1) the featured image of the first variant with that colour; 2) the swatch image set on the option value in Shopify admin; 3) the option value's swatch colour; 4) the product featured image. Horizon shows flat colour chips by default, so this overrides that on cards.
 
 ### S4. Product card: title and price
 - **Position:** The bottom of the card, below the swatch row. Left-aligned.
