@@ -148,6 +148,7 @@
       <footer>
         {% sections 'footer-group' %}
       </footer>
+      {% if settings.show_back_to_top %}{% render 'back-to-top' %}{% endif %}
     </div>
 
     {% render 'cart-drawer', render_wrapper: true %}

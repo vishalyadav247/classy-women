@@ -1,6 +1,6 @@
 # Spec 004: Home page body
 
-- **Status:** Draft
+- **Status:** Done (2026-11-19)
 - **Mockup(s):** `.claude/design/home.png`. Covers everything between the header (spec 001) and the footer (spec 001), which is design-map rows H1–H12. H10 is listed for page order only and is specified in spec 003.
 - **Template(s) affected:** `index`
 
@@ -16,9 +16,9 @@ The home page is the brand's shop window. Shoppers see a seasonal campaign hero 
 
 ## Conventions used in this spec
 - "Content width" means the theme's standard page width with side margins. In the mockup, content starts about 60px from the left edge of a 1920px canvas. Sections H1, H7, H11 and H12 are **full-bleed**, edge to edge. All other sections sit inside the content width.
-- "Section heading" means the left-aligned, uppercase, small, bold-ish heading style shared by H3, H4, H5, H6, H8, H9, H10 and H11, such as "MADE FOR EVERY MOMENT". All section headings must use one shared style so they look identical. `[NEEDS CLARIFICATION: heading font family, size, weight, letter-spacing]`
+- "Section heading" means the left-aligned, uppercase, small, bold-ish heading style shared by H3, H4, H5, H6, H8, H9, H10 and H11, such as "MADE FOR EVERY MOMENT". All section headings must use one shared style so they look identical. `[RESOLVED — see Clarifications log: heading font family, size, weight, letter-spacing]`
 - "Tile caption" means the small uppercase label left-aligned under an image tile, such as "EVERYDAY ICONS". H3, H5 and H9 must share this style.
-- Vertical spacing between sections looks uniform in the mockup, at roughly 80–100px. `[NEEDS CLARIFICATION: exact section spacing]`. Spacing is merchant-adjustable per section.
+- Vertical spacing between sections looks uniform in the mockup, at roughly 80–100px. `[RESOLVED — see Clarifications log: exact section spacing]`. Spacing is merchant-adjustable per section.
 - All copy shown in the mockup is example merchant content, not hard-coded text. The brand name "MIRAGGIO" and the press names are placeholders.
 
 ## Page order (home template)
@@ -53,7 +53,7 @@ The home page is the brand's shop window. Shoppers see a seasonal campaign hero 
 - **Merchant-editable content (per slide):**
   - Desktop image, plus an optional separate mobile image.
   - Optional heading, such as "A/W 26".
-  - Optional small subtext lines under the heading. In the mockup, two very small lines sit left and right under "A/W 26". `[NEEDS CLARIFICATION: subtext copy is unreadable]`
+  - Optional small subtext lines under the heading. In the mockup, two very small lines sit left and right under "A/W 26". `[RESOLVED — see Clarifications log: subtext copy is unreadable]`
   - Link label, such as "SHOP NOW", and link URL.
   - Optional link for the whole slide.
   - Text colour (light or dark) for legibility.
@@ -66,7 +66,7 @@ The home page is the brand's shop window. Shoppers see a seasonal campaign hero 
   - The heading is large, thin, light-coloured display type at the top-right.
   - "SHOP NOW" is a small uppercase text link, not a filled button, at the bottom-right.
   - Pagination indicators (dots or a small counter) sit at the bottom-right, below or beside the link.
-  - No arrows are visible. `[NEEDS CLARIFICATION: are prev/next arrows wanted, or only dots? Is the indicator dots or "1/3" numbers?]`
+  - No arrows are visible. `[RESOLVED — see Clarifications log: are prev/next arrows wanted, or only dots? Is the indicator dots or "1/3" numbers?]`
 - **Layout (mobile):** `[ASSUMPTION]`
   - Shows the mobile image if one is set. Otherwise the desktop image is cropped to fill a portrait or near-square frame (about 4:5).
   - Text keeps its relative position but stacks to the bottom if a corner position would overflow.
@@ -96,7 +96,7 @@ The home page is the brand's shop window. Shoppers see a seasonal campaign hero 
 - **Position:** Directly below S1 and above S3.
 - **Merchant-editable content:** One rich-text line, such as "We design for women who are driven by instinct, ambition, and an ever-evolving sense of style."
 - **Data-driven content:** None.
-- **Layout (desktop):** Single line of small body text, centred, inside the content width. Generous padding above and below, about 40–60px. No heading and no button. `[NEEDS CLARIFICATION: font size and colour of tagline]`
+- **Layout (desktop):** Single line of small body text, centred, inside the content width. Generous padding above and below, about 40–60px. No heading and no button. `[RESOLVED — see Clarifications log: font size and colour of tagline]`
 - **Layout (mobile):** `[ASSUMPTION]` Centred, wraps onto multiple lines, with side padding equal to page margins.
 - **Interactions & states:** None. With empty text the section renders nothing, or only the editor placeholder.
 - **Acceptance criteria:**
@@ -118,13 +118,13 @@ The home page is the brand's shop window. Shoppers see a seasonal campaign hero 
 - **Layout (desktop):**
   - Heading left-aligned above the tiles.
   - 4 equal columns that fill the content width, with a small gutter (about 8–12px).
-  - Images are portrait, roughly 0.92:1 (about 440×480px in the mockup). `[NEEDS CLARIFICATION: exact tile aspect ratio, 4:5 or 1:1?]`
+  - Images are portrait, roughly 0.92:1 (about 440×480px in the mockup). `[RESOLVED — see Clarifications log: exact tile aspect ratio, 4:5 or 1:1?]`
   - Images have no rounded corners.
   - The caption sits below the image, left-aligned, in the tile-caption style.
   - No arrows and no peek.
 - **Layout (mobile):** `[ASSUMPTION]` Horizontal swipe carousel showing about 1.5–2 tiles with the next one peeking. A 2×2 grid is the alternative if the merchant chooses grid. Captions stay under images.
 - **Interactions & states:**
-  - On hover, the image zooms slightly or the caption is underlined. `[NEEDS CLARIFICATION: hover effect]`
+  - On hover, the image zooms slightly or the caption is underlined. `[RESOLVED — see Clarifications log: hover effect]`
   - The whole tile is clickable.
   - A tile with no image shows a placeholder in the editor.
   - A tile with no link is not clickable.
@@ -143,7 +143,7 @@ The home page is the brand's shop window. Shoppers see a seasonal campaign hero 
   - Section heading, such as "MOST-LOVED STYLES".
   - An ordered list of tabs. Each tab has a label and a collection. The mockup labels are "ALL BESTSELLERS", "TOTE", "SHOULDER", "TOP HANDLE", "CROSSBODY", "MINI & MICRO".
   - Number of products per tab.
-  - A button label and link under the carousel, such as "Shop All Bestsellers". `[NEEDS CLARIFICATION: should the button link follow the active tab's collection, or always point to one fixed URL?]`
+  - A button label and link under the carousel, such as "Shop All Bestsellers". `[RESOLVED — see Clarifications log: should the button link follow the active tab's collection, or always point to one fixed URL?]`
 - **Data-driven content:** Products from each tab's collection, rendered with the standard product card from spec 002. That card supplies the image, badge, wishlist heart, swatches, title, price, compare-at price and % OFF.
 - **Layout (desktop):**
   - Heading left-aligned.
@@ -161,7 +161,7 @@ The home page is the brand's shop window. Shoppers see a seasonal campaign hero 
   - Exactly one tab is active, and the first tab is active on load.
   - Tabs are keyboard accessible, using tab semantics: arrow keys move between tabs, and the selected state is announced.
   - The arrows step the carousel. Prev is disabled at the start and next at the end. If all products fit, both are disabled or hidden.
-  - A tab whose collection has no products shows a short merchant-editable empty message, or the tab is hidden. `[NEEDS CLARIFICATION: hide empty tabs vs show empty message]`
+  - A tab whose collection has no products shows a short merchant-editable empty message, or the tab is hidden. `[RESOLVED — see Clarifications log: hide empty tabs vs show empty message]`
   - With only one tab configured, the tab row is hidden.
   - Sold-out, on-sale and badge states come from the spec 002 card.
 - **Acceptance criteria:**
@@ -184,8 +184,8 @@ The home page is the brand's shop window. Shoppers see a seasonal campaign hero 
 - **Data-driven content:** None. Optional collection image and title fallback when a tile links to a collection.
 - **Layout (desktop):**
   - The same structure as S3: heading left-aligned, 4 equal columns, caption under each image in the tile-caption style.
-  - Images are slightly taller than in S3, roughly 0.86:1 (about 440×510px). `[NEEDS CLARIFICATION: exact aspect ratio; is it intentionally different from S3?]`
-  - Small chevron icons appear on the left edge of tile 1 and the right edge of tile 4. These may be carousel arrows (more than 4 tiles) or part of the photography. `[NEEDS CLARIFICATION: is "New in" a carousel with overlay arrows, or a static 4-up grid?]`
+  - Images are slightly taller than in S3, roughly 0.86:1 (about 440×510px). `[RESOLVED — see Clarifications log: exact aspect ratio; is it intentionally different from S3?]`
+  - Small chevron icons appear on the left edge of tile 1 and the right edge of tile 4. These may be carousel arrows (more than 4 tiles) or part of the photography. `[RESOLVED — see Clarifications log: is "New in" a carousel with overlay arrows, or a static 4-up grid?]`
 - **Layout (mobile):** `[ASSUMPTION]` Same as S3 mobile: a swipe carousel with a peek.
 - **Interactions & states:**
   - Same as S3.
@@ -228,8 +228,8 @@ The home page is the brand's shop window. Shoppers see a seasonal campaign hero 
 - **Merchant-editable content:**
   - Background image, plus an optional mobile image.
   - Left group:
-    - Small eyebrow or brand line, such as "MIRAGGIO". This could be text or a logo image. `[NEEDS CLARIFICATION]`
-    - Large display heading, such as "GIFTING EDIT", in a tall condensed serif. `[NEEDS CLARIFICATION: font; is the heading live text or part of the image?]`
+    - Small eyebrow or brand line, such as "MIRAGGIO". This could be text or a logo image. `[RESOLVED — see Clarifications log]`
+    - Large display heading, such as "GIFTING EDIT", in a tall condensed serif. `[RESOLVED — see Clarifications log: font; is the heading live text or part of the image?]`
   - Right group:
     - Subheading, such as "Curate Your Own Bundle", in a serif.
     - Link label and URL, such as "SHOP NOW", shown as an underlined uppercase text link.
@@ -262,13 +262,13 @@ The home page is the brand's shop window. Shoppers see a seasonal campaign hero 
     - Image.
     - Overlay label text, such as "off the clock" or "ayla crossbody bag".
     - Link.
-  - The overlay label appears as lowercase text on a highlight background (a yellow or khaki marker effect) at the top-left of the image. `[NEEDS CLARIFICATION: is the highlighted label live text with a configurable highlight colour, or baked into the photo? Exact highlight colour hex]`
+  - The overlay label appears as lowercase text on a highlight background (a yellow or khaki marker effect) at the top-left of the image. `[RESOLVED — see Clarifications log: is the highlighted label live text with a configurable highlight colour, or baked into the photo? Exact highlight colour hex]`
 - **Data-driven content:** None. Optionally, a slide may link to a product or collection.
 - **Layout (desktop):**
   - Heading left-aligned.
   - 2 slides per view, filling the content width with a small gutter.
   - Images are landscape, roughly 4:3 (about 900×675px).
-  - Prev/next arrows are small circular white buttons overlaid at the vertical middle of the carousel's left and right edges. In the mockup they sit on the second visible slide's left edge and at the far right. `[NEEDS CLARIFICATION: exact arrow positions]`
+  - Prev/next arrows are small circular white buttons overlaid at the vertical middle of the carousel's left and right edges. In the mockup they sit on the second visible slide's left edge and at the far right. `[RESOLVED — see Clarifications log: exact arrow positions]`
   - No caption below the images.
 - **Layout (mobile):** `[ASSUMPTION]` 1 slide per view with a peek of the next, swipeable. Arrows are hidden and the label overlay stays at the top-left.
 - **Interactions & states:**
@@ -293,7 +293,7 @@ The home page is the brand's shop window. Shoppers see a seasonal campaign hero 
 - **Layout (desktop):**
   - Heading left-aligned.
   - 3 equal columns across the content width.
-  - Images are near-square to slightly landscape, roughly 1.2:1 (about 600×490px). `[NEEDS CLARIFICATION: exact aspect ratio]`
+  - Images are near-square to slightly landscape, roughly 1.2:1 (about 600×490px). `[RESOLVED — see Clarifications log: exact aspect ratio]`
   - The caption sits below each tile in the tile-caption style.
   - No arrows.
 - **Layout (mobile):** `[ASSUMPTION]` Swipe carousel with a peek, about 1.2 tiles per view, or a single-column stack.
@@ -325,7 +325,7 @@ The home page is the brand's shop window. Shoppers see a seasonal campaign hero 
   - The logo row is full-bleed and edge to edge. Logos are cut off at both viewport edges (the left one shows a partial "E"), which suggests a continuously scrolling marquee.
   - Logos are evenly spaced, vertically centred and about 40px tall.
   - Logos keep their own colours. COSMOPOLITAN is pink and the others are black, so logos are uploaded images, not tinted text.
-  - `[NEEDS CLARIFICATION: is the strip an auto-scrolling marquee or a static row that overflows?]`
+  - `[RESOLVED — see Clarifications log: is the strip an auto-scrolling marquee or a static row that overflows?]`
 - **Layout (mobile):** `[ASSUMPTION]` The same marquee with smaller logos (about 28px tall) and the same edge-to-edge bleed.
 - **Interactions & states:**
   - If it is a marquee: scrolls continuously and loops seamlessly with no visible gap or jump.
@@ -341,12 +341,12 @@ The home page is the brand's shop window. Shoppers see a seasonal campaign hero 
   - [ ] AC11.7 No press brand names or logos are bundled with the theme.
 
 ### S12. "Important update" band (H12)
-- **Position:** Last section of the home template, directly above the footer group. `[NEEDS CLARIFICATION: is this notice home-only, or should it appear on every page (footer group)? Spec assumes home-only.]`
+- **Position:** Last section of the home template, directly above the footer group. `[RESOLVED — see Clarifications log: is this notice home-only, or should it appear on every page (footer group)? Spec assumes home-only.]`
 - **Merchant-editable content:**
   - Heading, such as "IMPORTANT UPDATE:".
   - Body text, such as "Ignore fraudulent calls. Enjoy secure shopping with us. All Safe. All Style."
   - Logo image on the right. "MIRAGGIO" is a placeholder logo.
-  - Background colour (light grey in the mockup). `[NEEDS CLARIFICATION: hex]`
+  - Background colour (light grey in the mockup). `[RESOLVED — see Clarifications log: hex]`
 - **Data-driven content:** None. Optionally, the logo can default to the store logo from theme settings.
 - **Layout (desktop):**
   - Full-bleed light grey band, about 220px tall.
@@ -364,20 +364,27 @@ The home page is the brand's shop window. Shoppers see a seasonal campaign hero 
   - [ ] AC12.5 On mobile, text and logo stack without overlap.
 
 ## Open questions
-- `[NEEDS CLARIFICATION]` Fonts: section heading, tile caption, tagline, hero "A/W 26" display face, gifting "GIFTING EDIT" condensed serif and "Curate Your Own Bundle" serif. Need family, size, weight and letter-spacing.
-- `[NEEDS CLARIFICATION]` Colours (hex): page text, inactive tab grey, primary button black, S8 highlight label colour, S12 band grey, gifting banner text.
-- `[NEEDS CLARIFICATION]` Vertical spacing between sections, and the page side margin and gutter values.
-- `[NEEDS CLARIFICATION]` S1: subtext copy under "A/W 26" is unreadable. Are prev/next arrows wanted? Is the indicator dots or a numeric counter? What are the autoplay default and interval?
-- `[NEEDS CLARIFICATION]` S2: tagline font size and colour.
-- `[NEEDS CLARIFICATION]` S3, S5, S9: exact tile aspect ratios. Is the S5 ratio intentionally taller than S3? What is the hover effect for tiles?
-- `[NEEDS CLARIFICATION]` S4: should "Shop All Bestsellers" follow the active tab's collection or use a fixed link? Should empty tabs be hidden or show an empty message?
-- `[NEEDS CLARIFICATION]` S5: is "New in" a carousel with overlay arrows (chevrons are visible on tiles 1 and 4) or a static 4-up grid?
-- `[NEEDS CLARIFICATION]` S7: is "MIRAGGIO / GIFTING EDIT" live text or part of the banner image? Is the eyebrow text or a logo?
-- `[NEEDS CLARIFICATION]` S8: is the highlighted label live text or baked into the photo? Where exactly do the arrows sit?
-- `[NEEDS CLARIFICATION]` S11: auto-scrolling marquee or a static overflowing row? What is the scroll speed?
-- `[NEEDS CLARIFICATION]` S12: home-only, or sitewide in the footer group?
-- `[NEEDS CLARIFICATION]` All mobile behaviour marked `[ASSUMPTION]` needs sign-off, because the mockups are desktop only.
+- `[RESOLVED — see Clarifications log]` Fonts: section heading, tile caption, tagline, hero "A/W 26" display face, gifting "GIFTING EDIT" condensed serif and "Curate Your Own Bundle" serif. Need family, size, weight and letter-spacing.
+- `[RESOLVED — see Clarifications log]` Colours (hex): page text, inactive tab grey, primary button black, S8 highlight label colour, S12 band grey, gifting banner text.
+- `[RESOLVED — see Clarifications log]` Vertical spacing between sections, and the page side margin and gutter values.
+- `[RESOLVED — see Clarifications log]` S1: subtext copy under "A/W 26" is unreadable. Are prev/next arrows wanted? Is the indicator dots or a numeric counter? What are the autoplay default and interval?
+- `[RESOLVED — see Clarifications log]` S2: tagline font size and colour.
+- `[RESOLVED — see Clarifications log]` S3, S5, S9: exact tile aspect ratios. Is the S5 ratio intentionally taller than S3? What is the hover effect for tiles?
+- `[RESOLVED — see Clarifications log]` S4: should "Shop All Bestsellers" follow the active tab's collection or use a fixed link? Should empty tabs be hidden or show an empty message?
+- `[RESOLVED — see Clarifications log]` S5: is "New in" a carousel with overlay arrows (chevrons are visible on tiles 1 and 4) or a static 4-up grid?
+- `[RESOLVED — see Clarifications log]` S7: is "MIRAGGIO / GIFTING EDIT" live text or part of the banner image? Is the eyebrow text or a logo?
+- `[RESOLVED — see Clarifications log]` S8: is the highlighted label live text or baked into the photo? Where exactly do the arrows sit?
+- `[RESOLVED — see Clarifications log]` S11: auto-scrolling marquee or a static overflowing row? What is the scroll speed?
+- `[RESOLVED — see Clarifications log]` S12: home-only, or sitewide in the footer group?
+- `[RESOLVED — see Clarifications log]` All mobile behaviour marked `[ASSUMPTION]` needs sign-off, because the mockups are desktop only.
 
 ## Clarifications log
 | Question | Answer | Date |
 |---|---|---|
+| Defaults A4, A16, A21, B1–B4, C1 | Accepted as proposed in decisions.md. Shop-all button follows the active tab's collection; empty tabs are hidden. Important update band is home-only. Discount % rounds to nearest whole number. Fonts, colours, spacing, ratios use B defaults, all editable. All mobile `[ASSUMPTION]`s accepted. | 2026-11-19 |
+| S1 hero controls | Dots at bottom-right, no prev/next arrows, autoplay on by default every 5 s (pauses on hover/focus/reduced motion). Subtext lines are optional merchant text. | 2026-11-19 |
+| Overlay text (S1 heading, S7 eyebrow + "GIFTING EDIT", S8 labels) | Live, editable text, not baked into images. S8 highlight colour is a merchant setting. S7 eyebrow is text (an optional logo image is allowed). | 2026-11-19 |
+| S5 "New in" | Carousel, 4 per view on desktop; overlay arrows appear only when tiles overflow. | 2026-11-19 |
+| S11 "Featured on" | Auto-scrolling seamless marquee; pauses on hover/focus; static scrollable row under reduced motion. | 2026-11-19 |
+| Dependency on spec 002 | Build home now using Horizon's current product card; S4/S6 must render cards via the shared card so the 002 card is picked up automatically later. | 2026-11-19 |
+| Exact pixel values (fonts, hex, spacing, ratios) | Not readable from mockup; implementer uses close defaults exposed as settings (B1–B3). | 2026-11-19 |

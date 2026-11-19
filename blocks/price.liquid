@@ -6,6 +6,16 @@
   assign block_settings = block.settings
   assign product_resource = closest.product
   assign selected_variant = product_resource.selected_or_first_available_variant
+
+  # Inside a product card (any listing, or a different product on the product page) apply card price settings.
+  # Not a card: the page's own product, or the product a section is set to (featured product information).
+  assign price_context = ''
+  if product == blank or closest.product.id != product.id
+    assign price_context = 'card'
+  endif
+  if section.settings.product != blank and section.settings.product.id == closest.product.id
+    assign price_context = ''
+  endif
 -%}
 
 {% liquid
@@ -56,7 +66,8 @@
   {% render 'price',
     show_unit_price: true,
     product_resource: product_resource,
-    show_sale_price_first: block_settings.show_sale_price_first
+    show_sale_price_first: block_settings.show_sale_price_first,
+    context: price_context
   %}
 
   {% if block_settings.show_tax_info %}

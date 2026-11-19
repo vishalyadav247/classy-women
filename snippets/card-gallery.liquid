@@ -1,24 +1,38 @@
 {%- doc -%}
   Displays product images in a carousel.
   Settings allow for a full slideshow, showing only the first image, or showing the second image when hovering.
-  Note: When the product card itself is in a carousel layout, the card-gallery's carousel is disabled with JavaScript.
+  Note: When the product card itself is in a carousel layout, the card-gallery's carousel is disabled with JavaScript,
+  unless `allow_nested` is passed (then it is only disabled below the large breakpoint).
 
   @param [children] - Additional content rendered below the card gallery
   @param [section] - The section object the snippet is rendered in
   @param [block] - The block object the snippet is rendered in
+  @param {boolean} [has_badges] - Whether a badge is shown; overrides the built-in Sold out / Sale check (used for placeholder padding)
+  @param {string} [image_fit] - { 'cover', 'contain' } - How images fit the media box. Defaults to 'cover'
+  @param {string} [media_background] - Background colour behind the media (blank = transparent)
+  @param {boolean} [show_indicator] - Render the image position line under the media (needs the card carousel setting and 2+ images)
+  @param {string} [indicator_style] - CSS custom properties for the position line (--indicator-thickness, --indicator-gap, --indicator-color, --indicator-track-color)
+  @param {boolean} [allow_nested] - Keep the image carousel usable on desktop when the card sits inside another carousel
+  @param {boolean} [neutral_placeholder] - For products without media, show a neutral placeholder image instead of the product title
 {%- enddoc -%}
 
 {% liquid
   assign product = closest.product
   assign block_settings = block.settings
   assign image_sizes = '(min-width: 750px) 50vw, 100vw'
+  assign indicator_count = 0
 
   # Check if product has badges and determine position
+  assign has_badges_param = has_badges
   assign has_badges = false
   assign badge_position = null
   if product != blank
-    if product.available == false or product.compare_at_price > product.price
+    if has_badges_param != nil
+      assign has_badges = has_badges_param
+    elsif product.available == false or product.compare_at_price > product.price
       assign has_badges = true
+    endif
+    if has_badges
       assign badge_position = settings.badge_position
     endif
   endif
@@ -54,6 +68,8 @@
       assign ratio = '16 / 9'
     when 'portrait'
       assign ratio = '4 / 5'
+    when 'tall'
+      assign ratio = '3 / 4'
     when 'square'
       assign ratio = '1'
     when 'adapt'
@@ -66,15 +82,20 @@
       assign media_fit = block_settings.constrain_to_viewport
     endif
   endif
+  if media_fit == blank and image_fit != blank
+    assign media_fit = image_fit
+  endif
 %}
 
 <div
   ref="cardGallery"
-  class="card-gallery card-gallery-{{ block.id }} spacing-style border-style{% if has_badges %} card-gallery--badge-{{ badge_position }}{% endif %}"
+  class="card-gallery card-gallery-{{ block.id }} spacing-style border-style{% if has_badges %} card-gallery--badge-{{ badge_position }}{% endif %}{% if media_background != blank %} card-gallery--media-background{% endif %}"
   style="
     {% render 'border-override', settings: block_settings %}
     {% render 'spacing-style', settings: block_settings %}
     --gallery-aspect-ratio: {{ ratio }};
+    {%- if media_background != blank %} --card-media-background: {{ media_background }};{% endif %}
+    {%- if show_indicator %} {{ indicator_style }}{% endif %}
   "
   data-product-id="{{ product.id }}"
   {% if settings.show_second_image_on_hover and product.media.size > 1 %}
@@ -192,13 +213,21 @@
           # Arrows can only reach slides that are rendered visible. Variant images past
           # the featured media are hidden, so a product whose only extra media are
           # variant images has a single navigable slide and would get inert arrows.
-          if product.media.size > 2 and visible_slide_count > 1
-            assign show_arrows = true
+          # With hover-swap off, every visible slide is reached through the arrows (spec 002).
+          if visible_slide_count > 1
+            if product.media.size > 2 or settings.show_second_image_on_hover == false
+              assign show_arrows = true
+            endif
           endif
 
           assign slideshow_attributes = 'data-generic-media-size="[generic_media_size]"' | replace: '[generic_media_size]', generic_media_size
           if settings.product_card_carousel == false
             assign slideshow_attributes = slideshow_attributes | append: ' disabled="true"'
+          elsif show_indicator and visible_slide_count > 1
+            assign indicator_count = visible_slide_count | at_most: max_visible_slide_count
+          endif
+          if allow_nested
+            assign slideshow_attributes = slideshow_attributes | append: ' allow-nested'
           endif
         %}
         {% render 'slideshow',
@@ -210,6 +239,27 @@
           attributes: slideshow_attributes
         %}
       {%- endif -%}
+    </a>
+    {%- if indicator_count > 1 -%}
+      <div
+        class="card-gallery__indicator"
+        ref="cardIndicator"
+        aria-hidden="true"
+        style="--indicator-count: {{ indicator_count }}; --indicator-index: 0;"
+      >
+        <span class="card-gallery__indicator-bar"></span>
+      </div>
+    {%- endif -%}
+  {% elsif product != blank and product.media.size == 0 and neutral_placeholder %}
+    <a
+      class="contents"
+      ref="cardGalleryLink"
+      href="{{ product.url }}"
+      aria-label="{{- product.title -}}"
+    >
+      <div class="product-media-container card-gallery__placeholder">
+        {{ 'product-apparel-1' | placeholder_svg_tag }}
+      </div>
     </a>
   {% elsif product != blank and product.media.size == 0 %}
     <div class="product-card-gallery__title-placeholder">
@@ -255,6 +305,53 @@
     .card-gallery:hover .quick-add__button {
       display: none;
     }
+  }
+
+  .card-gallery--media-background .product-media-container {
+    background-color: var(--card-media-background);
+  }
+
+  /* Image position line (spec 002): a 1/N segment that follows the active slide */
+  .card-gallery__indicator {
+    position: relative;
+    height: var(--indicator-thickness, 2px);
+    margin-block-start: var(--indicator-gap, 8px);
+    overflow: hidden;
+    background-color: var(--indicator-track-color, rgb(var(--color-foreground-rgb) / var(--opacity-10)));
+  }
+
+  .card-gallery__indicator-bar {
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: 0;
+    width: calc(100% / var(--indicator-count, 1));
+    background-color: var(--indicator-color, var(--color-foreground));
+    transform: translateX(calc(100% * var(--indicator-index, 0)));
+    transition: transform var(--animation-speed) var(--animation-easing);
+
+    [dir='rtl'] & {
+      transform: translateX(calc(-100% * var(--indicator-index, 0)));
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      transition: none;
+    }
+  }
+
+  /* Keep overlays on the image, above the position line (only while the line is shown) */
+  .card-gallery:not([product-grid-view='zoom-out'] *):has(> .card-gallery__indicator:not([hidden])) > .quick-add {
+    bottom: calc(var(--indicator-gap, 8px) + var(--indicator-thickness, 2px));
+  }
+
+  .card-gallery:not([product-grid-view='zoom-out'] *):has(> .card-gallery__indicator:not([hidden]))
+    > .product-badges--bottom-left {
+    bottom: calc(
+      var(--badge-inset) + var(--padding-block-start) + var(--indicator-gap, 8px) + var(--indicator-thickness, 2px)
+    );
+  }
+
+  [product-grid-view='zoom-out'] .card-gallery__indicator {
+    display: none;
   }
 
   .card-gallery__placeholder svg {

@@ -17,15 +17,23 @@
   class="section-background{% if section.settings.background_color != blank %} color-custom-{{ section.id }}{% endif %}"
 ></div>
 <marquee-component
-  class="section spacing-style gap-style{% if section.settings.background_color != blank %} color-custom-{{ section.id }}{% endif %}"
+  class="section spacing-style gap-style{% if section.settings.background_color != blank %} color-custom-{{ section.id }}{% endif %}{% unless request.design_mode %} marquee--hide-empty{% endunless %}"
   style="
     {%- render 'spacing-style', settings: section.settings %};
     {% render 'gap-style', value: gap_between_elements, name: 'marquee-gap' %}
     --marquee-direction: {{ section.settings.movement_direction }};
+    --marquee-image-height: {{ section.settings.image_height }}px;
+    --marquee-image-height-mobile: {{ section.settings.image_height_mobile }}px;
   "
-  data-speed-factor="25"
+  data-speed-factor="{{ section.settings.speed }}"
   data-movement-direction="{{ section.settings.movement_direction }}"
 >
+  {%- if section.settings.heading != blank -%}
+    {% render 'text-block-styles' %}
+    <div class="text-block section-heading marquee__heading">
+      <h2>{{ section.settings.heading }}</h2>
+    </div>
+  {%- endif -%}
   <div
     class="marquee__wrapper"
     ref="wrapper"
@@ -84,8 +92,51 @@
     align-content: center;
   }
 
+  .marquee__heading {
+    margin-block-end: var(--padding-xl);
+  }
+
+  /* Logo images (image blocks): fixed height, natural width, original colours (no filter). */
+  .marquee__repeated-items :is(.image-block__image, .placeholder-image) {
+    height: var(--marquee-image-height-mobile);
+    width: auto;
+    aspect-ratio: auto;
+    object-fit: contain;
+  }
+
+  .marquee__repeated-items .placeholder-image {
+    aspect-ratio: 3 / 1;
+  }
+
+  @media screen and (min-width: 750px) {
+    .marquee__repeated-items :is(.image-block__image, .placeholder-image) {
+      height: var(--marquee-image-height);
+    }
+  }
+
+  /* Outside the editor, skip logo blocks that have no image. */
+  .marquee--hide-empty .marquee__repeated-items .placeholder-image,
+  .marquee--hide-empty .marquee__repeated-items .image-block:has(> .placeholder-image) {
+    display: none;
+  }
+
+  /* Reduced motion: no animation (see below) and no clones (marquee.js), so offer a static, scrollable row. */
+  @media (prefers-reduced-motion: reduce) {
+    marquee-component .marquee__wrapper {
+      grid-column: 1 / -1;
+      width: auto;
+      max-width: 100%;
+      overflow-x: auto;
+      scroll-snap-type: none;
+      padding-inline: var(--page-margin);
+    }
+  }
+
   @media (prefers-reduced-motion: no-preference) {
+    /* Span the full section width (bleed past the page margins) so the moving row has no visible start edge
+       and doesn't pop when the loop resets. The heading keeps the content column. */
     marquee-component:not([data-disabled]) .marquee__wrapper {
+      grid-column: 1 / -1;
       animation: marquee-motion var(--marquee-speed) linear infinite var(--marquee-direction);
     }
   }
@@ -115,9 +166,17 @@
     },
     {
       "type": "_divider"
+    },
+    {
+      "type": "image"
     }
   ],
   "settings": [
+    {
+      "type": "inline_richtext",
+      "id": "heading",
+      "label": "t:settings.heading"
+    },
     {
       "type": "select",
       "id": "movement_direction",
@@ -133,6 +192,36 @@
         }
       ],
       "default": "normal"
+    },
+    {
+      "type": "range",
+      "id": "speed",
+      "label": "t:settings.speed",
+      "info": "t:info.marquee_speed",
+      "min": 5,
+      "max": 60,
+      "step": 1,
+      "default": 25
+    },
+    {
+      "type": "range",
+      "id": "image_height",
+      "label": "t:settings.image_height",
+      "min": 16,
+      "max": 120,
+      "step": 2,
+      "unit": "px",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "image_height_mobile",
+      "label": "t:settings.image_height_mobile",
+      "min": 16,
+      "max": 120,
+      "step": 2,
+      "unit": "px",
+      "default": 28
     },
     {
       "type": "color",

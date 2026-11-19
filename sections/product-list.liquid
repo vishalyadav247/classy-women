@@ -5,8 +5,35 @@
   if section.settings.background_color != blank
     render 'contrast-override', background_color: section.settings.background_color, section_id: section.id
   endif
+
+  # Tabs mode: active as soon as the section has at least one `_product-list-tab` block.
+  # Tabs whose collection is blank or has no products are hidden.
+  assign tab_blocks = section.blocks | where: 'type', '_product-list-tab'
+  assign active_tab_count = 0
+  for tab in tab_blocks
+    if tab.settings.collection != blank and tab.settings.collection.products_count > 0
+      assign active_tab_count = active_tab_count | plus: 1
+    endif
+  endfor
+
+  # The single product list: always outside tabs mode, and as editor placeholders when every tab is empty.
+  assign show_list = true
+  if tab_blocks.size > 0
+    assign show_list = false
+    if active_tab_count == 0 and request.design_mode
+      assign show_list = true
+    endif
+  endif
 %}
 
+{% if active_tab_count > 0 %}
+  <script
+    type="module"
+    src="{{ 'product-list-tabs.js' | asset_url }}"
+    fetchpriority="low"
+  ></script>
+  <product-list-tabs class="product-list-tabs">
+{% endif %}
 <div
   class="section-background{% if section.settings.background_color != blank %} color-custom-{{ section.id }}{% endif %}"
 ></div>
@@ -29,18 +56,83 @@
     {%- content_for 'block', type: '_product-list-content', id: 'static-header' -%}
   </div>
 
-  {% capture list_items %}
-    {% if section.settings.collection != blank and shop.products_count != 0 %}
-      {% paginate section.settings.collection.products by max_items %}
-        {% for product in section.settings.collection.products limit: max_items %}
-        <div
-          class="resource-list__item"
-        >
+  {% if show_list %}
+    {% capture list_items %}
+      {% if section.settings.collection != blank and shop.products_count != 0 and tab_blocks.size == 0 %}
+        {% paginate section.settings.collection.products by max_items %}
+          {% for product in section.settings.collection.products limit: max_items %}
+          <div
+            class="resource-list__item"
+          >
+              {% content_for 'block',
+                type: '_product-card',
+                id: 'static-product-card',
+                closest.product: product,
+                product_view_context: 'collection'
+              %}
+            </div>
+
+            {% unless forloop.last %}
+              <!--@list/split-->
+            {% endunless %}
+          {% endfor %}
+        {% endpaginate %}
+      {% else %}
+        {% for i in (1..max_items) %}
+          <div
+            class="resource-list__item"
+          >
+              {% content_for 'block', type: '_product-card', id: 'static-product-card', closest.product: null %}
+          </div>
+
+          {% unless forloop.last %}
+            <!--@list/split-->
+          {% endunless %}
+        {% endfor %}
+      {% endif %}
+    {% endcapture %}
+
+    {% liquid
+      # Create an array from the list items to be used for different layout types
+      assign list_items_array = list_items | strip | split: '<!--@list/split-->'
+    %}
+
+    {% render 'resource-list',
+      list_items: list_items,
+      list_items_array: list_items_array,
+      settings: section.settings,
+      slide_count: max_items,
+      content_type: 'products',
+      test_id: 'resource-list-grid'
+    %}
+  {% endif %}
+
+  {% if active_tab_count > 0 %}
+    {% if active_tab_count > 1 %}
+      {% render 'product-list-tablist', tabs: tab_blocks, section_id: section.id %}
+    {% endif %}
+
+    {% assign panel_index = 0 %}
+    {% for tab in tab_blocks %}
+      {% liquid
+        assign tab_collection = tab.settings.collection
+        if tab_collection == blank or tab_collection.products_count == 0
+          continue
+        endif
+        assign panel_index = panel_index | plus: 1
+        assign panel_carousel_ref = 'tabCarousel' | append: panel_index
+        assign panel_card_id_suffix = '-p' | append: panel_index
+      %}
+
+      {% capture list_items %}
+        {% for product in tab_collection.products limit: max_items %}
+          <div class="resource-list__item">
             {% content_for 'block',
               type: '_product-card',
               id: 'static-product-card',
               closest.product: product,
-              product_view_context: 'collection'
+              product_view_context: 'collection',
+              card_id_suffix: panel_card_id_suffix
             %}
           </div>
 
@@ -48,35 +140,33 @@
             <!--@list/split-->
           {% endunless %}
         {% endfor %}
-      {% endpaginate %}
-    {% else %}
-      {% for i in (1..max_items) %}
-        <div
-          class="resource-list__item"
-        >
-            {% content_for 'block', type: '_product-card', id: 'static-product-card', closest.product: null %}
-        </div>
+      {% endcapture %}
 
-        {% unless forloop.last %}
-          <!--@list/split-->
-        {% endunless %}
-      {% endfor %}
-    {% endif %}
-  {% endcapture %}
+      {% assign list_items_array = list_items | strip | split: '<!--@list/split-->' %}
 
-  {% liquid
-    # Create an array from the list items to be used for different layout types
-    assign list_items_array = list_items | strip | split: '<!--@list/split-->'
-  %}
-
-  {% render 'resource-list',
-    list_items: list_items,
-    list_items_array: list_items_array,
-    settings: section.settings,
-    slide_count: max_items,
-    content_type: 'products',
-    test_id: 'resource-list-grid'
-  %}
+      <div
+        class="product-list-tabs__panel"
+        id="TabPanel-{{ section.id }}-{{ panel_index }}"
+        {% if active_tab_count > 1 %}
+          role="tabpanel" aria-labelledby="Tab-{{ section.id }}-{{ panel_index }}"
+        {% endif %}
+        ref="panels[]"
+        {% if panel_index > 1 %}
+          hidden
+        {% endif %}
+      >
+        {% render 'resource-list',
+          list_items: list_items,
+          list_items_array: list_items_array,
+          settings: section.settings,
+          carousel_ref: panel_carousel_ref,
+          slide_count: max_items,
+          content_type: 'products',
+          test_id: 'resource-list-grid'
+        %}
+      </div>
+    {% endfor %}
+  {% endif %}
 
   <div
     class="section-resource-list__content"
@@ -85,6 +175,36 @@
     {%- content_for 'blocks' -%}
   </div>
 </div>
+{% if active_tab_count > 0 %}
+  </product-list-tabs>
+{% endif %}
+
+{% stylesheet %}
+  /* Tabs mode wrapper must not change the section's grid layout. */
+  .product-list-tabs {
+    display: contents;
+  }
+
+  /* Each panel re-creates the section grid so its content is placed like a direct child of `.section`. */
+  .section > .product-list-tabs__panel {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: subgrid;
+  }
+
+  .section > .product-list-tabs__panel[hidden] {
+    display: none;
+  }
+
+  .product-list-tabs__panel > * {
+    grid-column: 2;
+  }
+
+  .section--full-width > .product-list-tabs__panel > *,
+  .product-list-tabs__panel > .force-full-width {
+    grid-column: 1 / -1;
+  }
+{% endstylesheet %}
 
 {% schema %}
 {
@@ -99,12 +219,22 @@
     },
     {
       "type": "_divider"
+    },
+    {
+      "type": "_product-list-tab"
+    },
+    {
+      "type": "_product-list-button"
     }
   ],
   "disabled_on": {
     "groups": ["header", "footer"]
   },
   "settings": [
+    {
+      "type": "paragraph",
+      "content": "t:info.product_list_tabs"
+    },
     {
       "type": "collection",
       "id": "collection",
@@ -266,6 +396,30 @@
       ],
       "default": "none",
       "visible_if": "{{ section.settings.icons_style != 'none' and section.settings.layout_type == 'carousel' or section.settings.carousel_on_mobile == true }}"
+    },
+    {
+      "type": "select",
+      "id": "carousel_arrows_position",
+      "label": "t:settings.arrows_position",
+      "options": [
+        {
+          "value": "on_media",
+          "label": "t:options.on_media"
+        },
+        {
+          "value": "below_end",
+          "label": "t:options.below_carousel_right"
+        }
+      ],
+      "default": "on_media",
+      "visible_if": "{{ section.settings.layout_type == 'carousel' or section.settings.carousel_on_mobile == true }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "desktop_peek",
+      "label": "t:settings.desktop_peek",
+      "default": true,
+      "visible_if": "{{ section.settings.layout_type == 'carousel' }}"
     },
     {
       "type": "header",
@@ -458,7 +612,17 @@
               "type": "_product-card-gallery",
               "name": "t:names.product_card_media",
               "settings": {
-                "image_ratio": "adapt",
+                "image_ratio": "tall",
+                "image_fit": "contain",
+                "media_background_color": "#EDEDED",
+                "show_badges": true,
+                "neutral_placeholder": true,
+                "swipe_in_carousels": true,
+                "show_indicator": true,
+                "indicator_thickness": 2,
+                "indicator_color": "#000000",
+                "indicator_track_color": "#E0E0E0",
+                "indicator_gap": 8,
                 "border": "none",
                 "border_width": 1,
                 "border_opacity": 100,
@@ -469,11 +633,30 @@
                 "padding-inline-end": 0
               }
             },
+            "swatches_card": {
+              "type": "swatches",
+              "name": "t:names.swatches",
+              "settings": {
+                "product_swatches_alignment": "flex-start",
+                "product_swatches_alignment_mobile": "flex-start",
+                "swatch_style": "photos",
+                "thumbnail_size": 30,
+                "thumbnail_radius": 0,
+                "thumbnail_gap": 6,
+                "hide_single_value": true,
+                "hide_padding": false,
+                "product_swatches_padding_top": 8,
+                "product_swatches_padding_bottom": 0,
+                "product_swatches_padding_left": 0,
+                "product_swatches_padding_right": 0
+              }
+            },
             "product_title": {
               "type": "product-title",
               "name": "t:names.product_title",
               "settings": {
-                "width": "fit-content",
+                "width": "100%",
+                "single_line": true,
                 "max_width": "normal",
                 "alignment": "left",
                 "type_preset": "paragraph",
@@ -514,7 +697,7 @@
               }
             }
           },
-          "block_order": ["product-card-gallery", "product_title", "price"]
+          "block_order": ["product-card-gallery", "swatches_card", "product_title", "price"]
         }
       },
       "block_order": []
@@ -628,7 +811,17 @@
               "type": "_product-card-gallery",
               "name": "t:names.product_card_media",
               "settings": {
-                "image_ratio": "adapt",
+                "image_ratio": "tall",
+                "image_fit": "contain",
+                "media_background_color": "#EDEDED",
+                "show_badges": true,
+                "neutral_placeholder": true,
+                "swipe_in_carousels": true,
+                "show_indicator": true,
+                "indicator_thickness": 2,
+                "indicator_color": "#000000",
+                "indicator_track_color": "#E0E0E0",
+                "indicator_gap": 8,
                 "border": "none",
                 "border_width": 1,
                 "border_opacity": 100,
@@ -639,11 +832,30 @@
                 "padding-inline-end": 0
               }
             },
+            "swatches_card": {
+              "type": "swatches",
+              "name": "t:names.swatches",
+              "settings": {
+                "product_swatches_alignment": "flex-start",
+                "product_swatches_alignment_mobile": "flex-start",
+                "swatch_style": "photos",
+                "thumbnail_size": 30,
+                "thumbnail_radius": 0,
+                "thumbnail_gap": 6,
+                "hide_single_value": true,
+                "hide_padding": false,
+                "product_swatches_padding_top": 8,
+                "product_swatches_padding_bottom": 0,
+                "product_swatches_padding_left": 0,
+                "product_swatches_padding_right": 0
+              }
+            },
             "product_title": {
               "type": "product-title",
               "name": "t:names.product_title",
               "settings": {
-                "width": "fit-content",
+                "width": "100%",
+                "single_line": true,
                 "max_width": "normal",
                 "alignment": "left",
                 "type_preset": "paragraph",
@@ -684,7 +896,7 @@
               }
             }
           },
-          "block_order": ["product-card-gallery", "product_title", "price"]
+          "block_order": ["product-card-gallery", "swatches_card", "product_title", "price"]
         }
       },
       "block_order": []
@@ -799,7 +1011,17 @@
               "type": "_product-card-gallery",
               "name": "t:names.product_card_media",
               "settings": {
-                "image_ratio": "adapt",
+                "image_ratio": "tall",
+                "image_fit": "contain",
+                "media_background_color": "#EDEDED",
+                "show_badges": true,
+                "neutral_placeholder": true,
+                "swipe_in_carousels": true,
+                "show_indicator": true,
+                "indicator_thickness": 2,
+                "indicator_color": "#000000",
+                "indicator_track_color": "#E0E0E0",
+                "indicator_gap": 8,
                 "border": "none",
                 "border_width": 1,
                 "border_opacity": 100,
@@ -810,11 +1032,30 @@
                 "padding-inline-end": 0
               }
             },
+            "swatches_card": {
+              "type": "swatches",
+              "name": "t:names.swatches",
+              "settings": {
+                "product_swatches_alignment": "flex-start",
+                "product_swatches_alignment_mobile": "flex-start",
+                "swatch_style": "photos",
+                "thumbnail_size": 30,
+                "thumbnail_radius": 0,
+                "thumbnail_gap": 6,
+                "hide_single_value": true,
+                "hide_padding": false,
+                "product_swatches_padding_top": 8,
+                "product_swatches_padding_bottom": 0,
+                "product_swatches_padding_left": 0,
+                "product_swatches_padding_right": 0
+              }
+            },
             "product_title": {
               "type": "product-title",
               "name": "t:names.product_title",
               "settings": {
-                "width": "fit-content",
+                "width": "100%",
+                "single_line": true,
                 "max_width": "normal",
                 "alignment": "left",
                 "type_preset": "paragraph",
@@ -855,7 +1096,7 @@
               }
             }
           },
-          "block_order": ["product-card-gallery", "product_title", "price"]
+          "block_order": ["product-card-gallery", "swatches_card", "product_title", "price"]
         }
       },
       "block_order": []

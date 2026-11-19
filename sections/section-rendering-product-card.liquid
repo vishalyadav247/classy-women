@@ -52,8 +52,24 @@
     </variant-picker>
     {% render 'variant-swatches', product_resource: product, has_option_selected: true %}
 
+    {% comment %}
+      Spec 002: same badge and card-context price markup as the initial card render, so product-card.js
+      can morph `[data-product-badge]` and `product-price [ref='priceContainer']` after a swatch click.
+    {% endcomment %}
+    {% render 'product-badge',
+      product: product,
+      variant: product.selected_or_first_available_variant,
+      style: 'card'
+    %}
+
     <product-price>
-      {% render 'price', product_resource: product, show_unit_price: true %}
+      {% render 'price',
+        product_resource: product,
+        show_unit_price: true,
+        show_sale_price_first: true,
+        context: 'card',
+        variant_selected: true
+      %}
     </product-price>
 
     <product-sku-component

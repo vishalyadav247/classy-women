@@ -26,6 +26,12 @@
 {%- liquid
   assign block_settings = block.settings
   assign products_count = results_size
+
+  # Apply-button mode is a Drawer style option; ignore a value left over from another style
+  assign apply_with_button = false
+  if block_settings.filter_style == 'drawer' and block_settings.apply_mode == 'button'
+    assign apply_with_button = true
+  endif
   assign sort_by = results.sort_by | default: results.default_sort_by
   assign filters = filters | default: results.filters
   assign total_active_values = 0
@@ -92,6 +98,7 @@
   assign page_type_attribute = 'data-page-type="' | append: page_type | append: '"'
 
   assign collection_handle_attribute = 'data-collection-handle="' | append: collection.handle | append: '"'
+  assign form_data_attributes = collection_id_attribute | append: ' ' | append: collection_handle_attribute | append: ' ' | append: page_type_attribute | append: ' ' | append: results_count_attribute
 
   assign has_custom_color = false
   if block_settings.background_color != blank or block_settings.text_color != blank
@@ -106,6 +113,23 @@
 %}
 
 {% if block_settings.enable_filtering or block_settings.enable_sorting or block_settings.enable_grid_density %}
+  {% if block_settings.filter_style == 'drawer' %}
+    {% render 'facets-toolbar',
+      results: results,
+      filters: filters,
+      products_count: products_count,
+      total_active_values: total_active_values,
+      sort_by: sort_by,
+      results_url: results_url,
+      block_settings: block_settings,
+      section_id: section.id,
+      block_id: block.id,
+      block_attributes: block.shopify_attributes,
+      has_custom_color: has_custom_color,
+      facets_margin_style: facets_margin_style,
+      form_attributes: form_data_attributes
+    %}
+  {% else %}
   {% if block_settings.filter_style == 'vertical' %}
     {% # These elements are always rendered in the horizontal bar that's why we apply the .facets--horizontal class %}
     <div
@@ -116,18 +140,20 @@
         <h4 class="facets--filters-title">{{ 'content.filters' | t }}</h4>
       {% endif %}
 
-      <div
-        class="products-count-wrapper"
-        data-testid="products-count"
-      >
-        <span role="status">
-          {% if products_count > 25000 %}
-            {{- 'content.item_count_cutoff' | t: count: 25000 -}}
-          {% else %}
-            {{- 'content.item_count' | t: count: products_count -}}
-          {% endif %}
-        </span>
-      </div>
+      {% if block_settings.show_product_count %}
+        <div
+          class="products-count-wrapper"
+          data-testid="products-count"
+        >
+          <span role="status">
+            {% if products_count > 25000 %}
+              {{- 'content.item_count_cutoff' | t: count: 25000 -}}
+            {% else %}
+              {{- 'content.item_count' | t: count: products_count -}}
+            {% endif %}
+          </span>
+        </div>
+      {% endif %}
 
       {% if block_settings.enable_sorting %}
         {% render 'sorting',
@@ -278,18 +304,20 @@
               {% endif %}
             {% endif %}
             {% if block_settings.filter_style == 'horizontal' %}
-              <div
-                class="products-count-wrapper"
-                data-testid="products-count"
-              >
-                <span role="status">
-                  {% if products_count > 25000 %}
-                    {{- 'content.item_count_cutoff' | t: count: 25000 -}}
-                  {% else %}
-                    {{- 'content.item_count' | t: count: products_count -}}
-                  {% endif %}
-                </span>
-              </div>
+              {% if block_settings.show_product_count %}
+                <div
+                  class="products-count-wrapper"
+                  data-testid="products-count"
+                >
+                  <span role="status">
+                    {% if products_count > 25000 %}
+                      {{- 'content.item_count_cutoff' | t: count: 25000 -}}
+                    {% else %}
+                      {{- 'content.item_count' | t: count: products_count -}}
+                    {% endif %}
+                  </span>
+                </div>
+              {% endif %}
 
               {% if block_settings.enable_sorting %}
                 {% render 'sorting',
@@ -401,6 +429,7 @@
       {% endif %}
     </div>
   </div>
+  {% endif %}
 {% else %}
   <div></div>
 {% endif %}
@@ -410,6 +439,12 @@
     id="filters-drawer"
     data-skip-node-update
     no-persist
+    {% if block_settings.filter_style == 'drawer' %}
+      modal
+      {% if block_settings.drawer_side == 'left' %}
+        side="start"
+      {% endif %}
+    {% endif %}
     class="facets-block-wrapper facets-block-wrapper--vertical color-custom-drawer"
   >
     <dialog
@@ -423,6 +458,9 @@
         section-id="{{ section.id }}"
         id="{{ form_component }}"
         data-filter-style="{{ block_settings.filter_style }}"
+        {% if apply_with_button %}
+          apply-mode="button"
+        {% endif %}
         {{ collection_id_attribute }}
         {{ collection_handle_attribute }}
         {{ page_type_attribute }}
@@ -498,7 +536,7 @@
               </div>
             {% endif %}
 
-            {% if block_settings.enable_sorting %}
+            {% if block_settings.enable_sorting and block_settings.filter_style != 'drawer' %}
               {% render 'sorting',
                 results: results,
                 sort_by: sort_by,
@@ -530,9 +568,17 @@
           </button>
         </facet-remove-component>
 
-        {% if products_count > 0 %}
+        {% if apply_with_button %}
           <button
-            class="button facets__see-results"
+            class="button facets__see-results facets__see-results--apply"
+            type="button"
+            on:click="#{{ form_component }}/applyAndClose"
+          >
+            {{- 'actions.apply' | t -}}
+          </button>
+        {% elsif products_count > 0 %}
+          <button
+            class="button facets__see-results{% if block_settings.filter_style == 'drawer' %} facets__see-results--drawer{% endif %}"
             type="button"
             on:click="#filters-drawer/close"
           >
@@ -1288,6 +1334,14 @@
     }
   }
 
+  /* Apply-button mode and Drawer style: the drawer's close action is needed at every width */
+  .facets__see-results--apply,
+  .facets__see-results--drawer {
+    @media screen and (min-width: 990px) {
+      display: block;
+    }
+  }
+
   .facets-horizontal-remove {
     display: flex;
     align-items: center;
@@ -1325,6 +1379,10 @@
         {
           "value": "vertical",
           "label": "t:options.vertical"
+        },
+        {
+          "value": "drawer",
+          "label": "t:options.drawer"
         }
       ],
       "default": "horizontal",
@@ -1345,7 +1403,41 @@
         }
       ],
       "default": "centered",
-      "visible_if": "{{ block.settings.enable_filtering == true and block.settings.filter_style == 'horizontal' }}"
+      "visible_if": "{{ block.settings.enable_filtering == true and block.settings.filter_style != 'vertical' }}"
+    },
+    {
+      "type": "select",
+      "id": "drawer_side",
+      "label": "t:settings.drawer_side",
+      "options": [
+        {
+          "value": "right",
+          "label": "t:options.right"
+        },
+        {
+          "value": "left",
+          "label": "t:options.left"
+        }
+      ],
+      "default": "right",
+      "visible_if": "{{ block.settings.enable_filtering == true and block.settings.filter_style == 'drawer' }}"
+    },
+    {
+      "type": "select",
+      "id": "apply_mode",
+      "label": "t:settings.apply_mode",
+      "options": [
+        {
+          "value": "instant",
+          "label": "t:options.apply_instantly"
+        },
+        {
+          "value": "button",
+          "label": "t:options.apply_button"
+        }
+      ],
+      "default": "instant",
+      "visible_if": "{{ block.settings.enable_filtering == true and block.settings.filter_style == 'drawer' }}"
     },
     {
       "type": "select",
@@ -1382,6 +1474,12 @@
       "type": "checkbox",
       "id": "enable_sorting",
       "label": "t:settings.enable_sorting",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_product_count",
+      "label": "t:settings.show_product_count",
       "default": true
     },
     {
@@ -1463,7 +1561,7 @@
       "step": 1,
       "unit": "px",
       "default": 8,
-      "visible_if": "{{ block.settings.filter_style == 'horizontal' }}"
+      "visible_if": "{{ block.settings.filter_style != 'vertical' }}"
     },
     {
       "type": "range",

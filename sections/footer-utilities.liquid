@@ -14,7 +14,7 @@
   {{ section.shopify_attributes }}
 >
   <div
-    class="utilities utilities--blocks-{{ section.blocks.size }} spacing-style"
+    class="utilities utilities--blocks-{{ section.blocks.size }}{% if section.settings.alignment == 'center' %} utilities--center{% endif %} spacing-style"
     style="{% render 'spacing-style', settings: section.settings %} --border-width: {{ section.settings.divider_thickness }}px;{% if section.settings.divider_color != blank %} --divider-color: {{ section.settings.divider_color }};{% endif %} --gap: {{ section.settings.gap }}px;"
     data-testid="footer-utilities"
   >
@@ -95,6 +95,28 @@
       text-align: end;
     }
   }
+
+  /* Centre alignment: a single centred column at every width; text may wrap */
+  .utilities.utilities--center {
+    text-wrap: wrap;
+  }
+
+  .utilities.utilities--center > * {
+    text-align: center;
+  }
+
+  @media screen and (min-width: 750px) {
+    .utilities.utilities--center {
+      grid-template-columns: 1fr;
+      justify-content: center;
+      justify-items: center;
+    }
+
+    .utilities.utilities--center > * {
+      justify-self: center;
+      text-align: center;
+    }
+  }
 {% endstylesheet %}
 
 {% schema %}
@@ -132,6 +154,22 @@
       "step": 1,
       "unit": "px",
       "default": 24
+    },
+    {
+      "type": "select",
+      "id": "alignment",
+      "label": "t:settings.alignment",
+      "options": [
+        {
+          "value": "default",
+          "label": "t:options.default"
+        },
+        {
+          "value": "center",
+          "label": "t:options.center"
+        }
+      ],
+      "default": "default"
     },
     {
       "type": "color",

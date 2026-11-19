@@ -7,6 +7,11 @@
   @param {object} settings - The block or sections settings from the parent block/section.
   @param {string} [slide_width_max] - The maximum width of the slides in the carousel.
 
+  Optional keys read from `settings` (absent keys keep the default output):
+  - `carousel_arrows_position`: 'on_media' (default) | 'below_end'. 'below_end' places the arrows
+    below the carousel at the inline end, always visible, with disabled arrows dimmed. Hidden below 750px.
+  - `desktop_peek`: true (default) | false. false removes the next-slide peek at 750px and wider.
+
   @example
   {% render 'resource-list-carousel', slides: slides, slide_count: slide_count, settings: block.settings %}
 {%- enddoc -%}
@@ -26,6 +31,14 @@
   if settings.icons_style != 'none'
     assign show_arrows = true
   endif
+
+  assign carousel_class = 'resource-list__carousel'
+  if settings.carousel_arrows_position == 'below_end'
+    assign carousel_class = carousel_class | append: ' resource-list__carousel--arrows-below'
+  endif
+  if settings.desktop_peek == false
+    assign carousel_class = carousel_class | append: ' resource-list__carousel--no-peek'
+  endif
 %}
 
 {% capture slides %}
@@ -41,7 +54,7 @@
 <div style="{{ gutter_style }} --slide-width-max: {{ slide_width_max | default: '300px' }};">
   {% render 'slideshow',
     ref: slideshow_ref,
-    class: 'resource-list__carousel',
+    class: carousel_class,
     slides: slides,
     show_arrows: show_arrows,
     icon_style: settings.icons_style,
@@ -86,6 +99,62 @@
       );
       --fallback-slide-width: clamp(150px, var(--mobile-card-size, 60cqw), var(--slide-width-max));
       --slide-width: var(--section-slide-width, var(--fallback-slide-width));
+    }
+  }
+
+  @container resource-list-carousel (min-width: 750px) {
+    .resource-list__carousel--no-peek .resource-list__slide {
+      --peek-next-slide-size: 0px;
+    }
+  }
+
+  /* Arrows below the carousel, aligned to the inline end (e.g. on the row of a centred button). */
+  .resource-list__carousel--arrows-below > slideshow-container > slideshow-arrows {
+    inset: auto;
+    inset-block-start: calc(100% + var(--gap, 12px));
+    inset-inline-end: var(--util-page-margin-offset);
+    gap: var(--gap-xs);
+    padding-inline: 0;
+    align-items: center;
+    mix-blend-mode: normal;
+  }
+
+  .resource-list__carousel--arrows-below > slideshow-container > slideshow-arrows .slideshow-control {
+    display: flex;
+    opacity: 1;
+    animation: none;
+    color: var(--color-foreground);
+  }
+
+  .resource-list__carousel--arrows-below
+    > slideshow-container
+    > slideshow-arrows
+    :is(.slideshow-control--shape-square, .slideshow-control--shape-circle) {
+    background-color: transparent;
+    color: var(--color-foreground);
+    border: var(--style-border-width, 1px) solid rgb(var(--color-foreground-rgb) / var(--opacity-30));
+  }
+
+  .resource-list__carousel--arrows-below > slideshow-container > slideshow-arrows .slideshow-control[disabled] {
+    display: flex;
+    opacity: var(--opacity-30);
+    pointer-events: none;
+  }
+
+  .resource-list__carousel--arrows-below > slideshow-container > slideshow-arrows .slideshow-control--next {
+    margin-inline-start: 0;
+  }
+
+  @media (hover: none) and (pointer: coarse) {
+    .resource-list__carousel--arrows-below > [animate-arrows] > slideshow-arrows > .slideshow-control:not(:focus-visible) {
+      position: static;
+      clip: auto;
+    }
+  }
+
+  @media screen and (max-width: 749px) {
+    .resource-list__carousel--arrows-below > slideshow-container > slideshow-arrows {
+      display: none;
     }
   }
 

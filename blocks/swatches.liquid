@@ -1,14 +1,34 @@
-
-
 {%- liquid
   assign block_settings = block.settings
+  assign photos_mode = false
+  if block_settings.swatch_style == 'photos'
+    assign photos_mode = true
+  endif
+
+  # Same option choice as variant-swatches: first option with swatches, else first option named in settings.swatch_option_names.
+  assign swatch_option_names = settings.swatch_option_names | downcase | remove: ' ' | split: ','
+  assign swatch_value_count = 0
   for product_option in closest.product.options_with_values
     assign swatch_count = product_option.values | map: 'swatch' | compact | size
 
     if swatch_count > 0
-      assign product_has_swatches = true
+      assign swatch_value_count = product_option.values.size
+      break
+    endif
+
+    assign option_name = product_option.name | downcase | remove: ' '
+    if swatch_value_count == 0 and swatch_option_names contains option_name
+      assign swatch_value_count = product_option.values.size
     endif
   endfor
+
+  if swatch_value_count > 0
+    assign product_has_swatches = true
+  endif
+
+  if photos_mode and block_settings.hide_single_value and swatch_value_count < 2
+    assign product_has_swatches = false
+  endif
 -%}
 
 {% stylesheet %}
@@ -20,10 +40,60 @@
     gap: 0;
     flex-shrink: 0;
   }
+
+  /* Photo thumbnails (swatch_style: photos). Vars live on <product-swatches>, outside the morphed picker. */
+  .product-swatches--photos {
+    swatches-variant-picker-component overflow-list::part(list) {
+      gap: var(--card-swatch-gap);
+    }
+
+    .swatch {
+      --swatch-width: var(--card-swatch-size-mobile);
+      --swatch-height: var(--card-swatch-size-mobile);
+      --style-border-swatch-width: 1px;
+      --style-border-swatch-style: solid;
+      --color-border: rgb(var(--color-foreground-rgb) / var(--opacity-15));
+
+      border-radius: var(--card-swatch-radius);
+      background-size: cover;
+
+      @media screen and (min-width: 750px) {
+        --swatch-width: var(--card-swatch-size);
+        --swatch-height: var(--card-swatch-size);
+      }
+    }
+
+    .variant-option__button-label--has-swatch {
+      --focus-outline-radius: var(--card-swatch-radius);
+    }
+
+    /* Selected: 1px foreground border on the thumbnail instead of the offset outline. */
+    .variant-option__button-label--has-swatch:has(:checked) .swatch {
+      --color-border: var(--color-foreground);
+    }
+
+    .variant-option__button-label--has-swatch:has(:checked):not(:has(:focus-visible)) {
+      outline: none;
+    }
+
+    @supports not (background-color: rgb(from red 150 g b / alpha)) {
+      .variant-option__button-label--has-swatch:has(:checked):not(:has(:focus-visible))::after {
+        content: none;
+      }
+    }
+
+    /* Unavailable: faded thumbnail, Horizon strike-through kept. */
+    .variant-option__button-label--has-swatch:has([data-option-available='false']) .swatch {
+      opacity: var(--opacity-50);
+    }
+  }
 {% endstylesheet %}
 
 {% if product_has_swatches %}
   <product-swatches
+    {% if photos_mode %}
+      class="product-swatches--photos"
+    {% endif %}
     data-product-id="{{ closest.product.id }}"
     data-product-url="{{ closest.product.url }}"
     style="
@@ -35,10 +105,21 @@
       --product-swatches-padding-block-end: {{ block_settings.product_swatches_padding_bottom }}px;
       --product-swatches-padding-inline-start: {{ block_settings.product_swatches_padding_left }}px;
       --product-swatches-padding-inline-end: {{ block_settings.product_swatches_padding_right }}px;
+      {% if photos_mode %}
+        {%- assign swatch_size_mobile = block_settings.thumbnail_size | times: 0.85 | at_least: 24 -%}
+        --card-swatch-size: {{ block_settings.thumbnail_size }}px;
+        --card-swatch-size-mobile: {{ swatch_size_mobile }}px;
+        --card-swatch-radius: {{ block_settings.thumbnail_radius }}px;
+        --card-swatch-gap: {{ block_settings.thumbnail_gap }}px;
+      {% endif %}
     "
     {{ block.shopify_attributes }}
   >
-    {% render 'variant-swatches', product_resource: closest.product %}
+    {% if photos_mode %}
+      {% render 'variant-swatches', product_resource: closest.product, has_option_selected: true %}
+    {% else %}
+      {% render 'variant-swatches', product_resource: closest.product %}
+    {% endif %}
   </product-swatches>
 {% endif %}
 
@@ -90,6 +171,62 @@
         }
       ],
       "default": "flex-start"
+    },
+    {
+      "type": "select",
+      "id": "swatch_style",
+      "label": "t:settings.swatch_style",
+      "options": [
+        {
+          "value": "default",
+          "label": "t:options.default"
+        },
+        {
+          "value": "photos",
+          "label": "t:options.product_photos"
+        }
+      ],
+      "default": "default"
+    },
+    {
+      "type": "range",
+      "id": "thumbnail_size",
+      "label": "t:settings.size",
+      "min": 20,
+      "max": 48,
+      "step": 1,
+      "unit": "px",
+      "default": 30,
+      "visible_if": "{{ block.settings.swatch_style == 'photos' }}"
+    },
+    {
+      "type": "range",
+      "id": "thumbnail_radius",
+      "label": "t:settings.border_radius",
+      "min": 0,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "default": 0,
+      "visible_if": "{{ block.settings.swatch_style == 'photos' }}"
+    },
+    {
+      "type": "range",
+      "id": "thumbnail_gap",
+      "label": "t:settings.gap",
+      "min": 0,
+      "max": 16,
+      "step": 1,
+      "unit": "px",
+      "default": 6,
+      "visible_if": "{{ block.settings.swatch_style == 'photos' }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "hide_single_value",
+      "label": "t:settings.hide_single_swatch",
+      "default": false,
+      "visible_if": "{{ block.settings.swatch_style == 'photos' }}"
     },
     {
       "type": "header",

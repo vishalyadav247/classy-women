@@ -15,12 +15,16 @@
     section--{{ section.settings.section_width }}
     {% if section.settings.background_color != blank %}color-custom-{{ section.id }}{% endif %}
     section-carousel
+    {% if section.settings.tile_image_ratio == 'custom' %}section-carousel--fixed-ratio{% endif %}
+    {% if section.settings.image_hover_zoom %}section-carousel--hover-zoom{% endif %}
+    {% if section.settings.desktop_peek == false %}section-carousel--no-peek{% endif %}
     spacing-style
     gap-style
   "
   style="
     {% render 'spacing-style', settings: section.settings %}
     {% render 'gap-style', value: 12 %}
+    {% if section.settings.tile_image_ratio == 'custom' %}--carousel-tile-ratio: {{ section.settings.tile_image_ratio_custom }} / 100;{% endif %}
   "
   data-testid="carousel-section"
 >
@@ -28,6 +32,33 @@
 
   {% content_for 'block', type: '_carousel-content', id: 'static-carousel-content', closest.product: null %}
 </div>
+
+{% stylesheet %}
+  .section-carousel--fixed-ratio .card :is(.image-block__image, .placeholder-image) {
+    aspect-ratio: var(--carousel-tile-ratio);
+    width: 100%;
+  }
+
+  .section-carousel--hover-zoom .card .image-block {
+    overflow: hidden;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .section-carousel--hover-zoom .card .image-block__image {
+      transition: transform var(--animation-speed-slow) var(--ease-out-cubic);
+    }
+
+    .section-carousel--hover-zoom .card:is(:hover, :focus-within) .image-block__image {
+      transform: scale(1.04);
+    }
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-carousel--no-peek {
+      --peek-next-slide-size: 0px;
+    }
+  }
+{% endstylesheet %}
 
 {% schema %}
 {
@@ -86,6 +117,45 @@
       "step": 1,
       "unit": "px",
       "default": 8
+    },
+    {
+      "type": "select",
+      "id": "tile_image_ratio",
+      "label": "t:settings.tile_image_ratio",
+      "options": [
+        {
+          "value": "block",
+          "label": "t:options.set_per_image"
+        },
+        {
+          "value": "custom",
+          "label": "t:options.custom"
+        }
+      ],
+      "default": "block"
+    },
+    {
+      "type": "range",
+      "id": "tile_image_ratio_custom",
+      "label": "t:settings.tile_image_ratio_custom",
+      "min": 50,
+      "max": 200,
+      "step": 1,
+      "unit": "%",
+      "default": 80,
+      "visible_if": "{{ section.settings.tile_image_ratio == 'custom' }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "image_hover_zoom",
+      "label": "t:settings.image_hover_zoom",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "desktop_peek",
+      "label": "t:settings.desktop_peek",
+      "default": true
     },
     {
       "type": "color",

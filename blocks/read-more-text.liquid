@@ -1,0 +1,257 @@
+{% doc %}
+  Collapsible rich text with a "Read more" / "Read less" toggle (spec 005, S6).
+
+  Content source: the collection metafield `custom.seo_text` (rich text or multi-line text) when
+  `use_collection_metafield` is on and the metafield is set, otherwise the shared `text` setting.
+  The full content is always in the markup, so search engines can index it. The text is clamped to
+  `collapsed_lines` lines only once `assets/read-more.js` has defined `<read-more-text>`, so without
+  JavaScript the full text shows. The toggle stays hidden when the text fits within the clamp.
+
+  When there is no content, the block renders nothing on the storefront and hides its parent section.
+  In the theme editor an empty dashed placeholder keeps the block selectable.
+
+  Public theme block: usable in any section that accepts `@theme` blocks.
+
+  @example
+  {% content_for 'block', type: 'read-more-text', id: 'read-more-text' %}
+{% enddoc %}
+
+{% liquid
+  assign content = ''
+
+  if block.settings.use_collection_metafield
+    assign seo_metafield = closest.collection.metafields.custom.seo_text
+    if seo_metafield != blank
+      case seo_metafield.type
+        when 'rich_text_field'
+          assign content = seo_metafield | metafield_tag
+        when 'multi_line_text_field'
+          assign content = seo_metafield.value | escape | newline_to_br
+        else
+          assign content = seo_metafield.value | escape
+      endcase
+    endif
+  endif
+
+  if content == blank
+    assign content = block.settings.text
+  endif
+
+  assign visible_text = content | strip_html | strip
+  assign content_id = 'ReadMore-' | append: block.id
+%}
+
+{% if visible_text == blank %}
+  {% if request.design_mode %}
+    <div
+      class="read-more-text read-more-text--placeholder spacing-style"
+      style="{% render 'spacing-style', settings: block.settings %}"
+      {{ block.shopify_attributes }}
+    ></div>
+  {% else %}
+    {% style %}
+      #shopify-section-{{ section.id }} {
+        display: none;
+      }
+    {% endstyle %}
+  {% endif %}
+{% else %}
+  <script
+    src="{{ 'read-more.js' | asset_url }}"
+    type="module"
+    fetchpriority="low"
+  ></script>
+
+  <read-more-text
+    class="read-more-text read-more-text--{{ block.settings.text_size }} read-more-text--align-{{ block.settings.alignment }} spacing-style"
+    style="--collapsed-lines: {{ block.settings.collapsed_lines }}; {% render 'spacing-style', settings: block.settings %}"
+    {{ block.shopify_attributes }}
+  >
+    <div
+      id="{{ content_id }}"
+      class="read-more-text__content rte"
+      ref="content"
+      data-collapsed
+    >
+      {{ content }}
+    </div>
+    <button
+      type="button"
+      class="button-unstyled read-more-text__toggle"
+      ref="toggle"
+      aria-expanded="false"
+      aria-controls="{{ content_id }}"
+      on:click="/toggle"
+      data-label-more="{{ 'actions.read_more' | t | escape }}"
+      data-label-less="{{ 'actions.read_less' | t | escape }}"
+      hidden
+    >
+      {{- 'actions.read_more' | t -}}
+    </button>
+  </read-more-text>
+{% endif %}
+
+{% stylesheet %}
+  .read-more-text {
+    --read-more-font-size: var(--font-size--sm);
+
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--gap-xs, 0.5rem);
+    width: 100%;
+    font-size: var(--read-more-font-size);
+  }
+
+  .read-more-text--xs {
+    --read-more-font-size: var(--font-size--xs);
+  }
+
+  .read-more-text--md {
+    --read-more-font-size: var(--font-size--md);
+  }
+
+  .read-more-text--align-center {
+    align-items: center;
+    text-align: center;
+  }
+
+  .read-more-text__content {
+    width: 100%;
+    font-size: var(--read-more-font-size);
+  }
+
+  .read-more-text__content :is(p, ul, ol, h1, h2, h3, h4, h5, h6) {
+    margin-block: 0;
+  }
+
+  /* Clamp only once the component is defined, so the full text shows without JavaScript. */
+  read-more-text:defined .read-more-text__content[data-collapsed] {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: var(--collapsed-lines);
+    line-clamp: var(--collapsed-lines);
+    overflow: hidden;
+    max-height: calc(var(--collapsed-lines) * 1lh);
+  }
+
+  .read-more-text__toggle {
+    font-size: var(--read-more-font-size);
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+    cursor: pointer;
+  }
+
+  .read-more-text__toggle:hover {
+    text-decoration-thickness: 2px;
+  }
+
+  .read-more-text__toggle[hidden] {
+    display: none;
+  }
+
+  .read-more-text--placeholder {
+    min-height: 4rem;
+    border: 1px dashed var(--color-border);
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:names.read_more_text",
+  "tag": null,
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "use_collection_metafield",
+      "label": "t:settings.use_collection_metafield",
+      "info": "t:info.seo_text_metafield",
+      "default": true
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "t:settings.text"
+    },
+    {
+      "type": "range",
+      "id": "collapsed_lines",
+      "label": "t:settings.collapsed_lines",
+      "min": 2,
+      "max": 12,
+      "step": 1,
+      "default": 4
+    },
+    {
+      "type": "header",
+      "content": "t:content.typography"
+    },
+    {
+      "type": "select",
+      "id": "text_size",
+      "label": "t:settings.size",
+      "options": [
+        {
+          "value": "xs",
+          "label": "t:options.extra_small"
+        },
+        {
+          "value": "sm",
+          "label": "t:options.small"
+        },
+        {
+          "value": "md",
+          "label": "t:options.medium"
+        }
+      ],
+      "default": "sm"
+    },
+    {
+      "type": "select",
+      "id": "alignment",
+      "label": "t:settings.alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "t:options.left"
+        },
+        {
+          "value": "center",
+          "label": "t:options.center"
+        }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "header",
+      "content": "t:content.padding"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "t:settings.top",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "t:settings.bottom",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:names.read_more_text",
+      "category": "t:categories.basic"
+    }
+  ]
+}
+{% endschema %}

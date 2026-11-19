@@ -8,6 +8,7 @@
   @param {object} [block] - The block object
   @param {number} [product_card_gap] - The gap between the product card children (overrides block settings)
   @param {string} [product_view_context] - The context in which the product card is being rendered. Used for standard events.
+  @param {string} [card_id_suffix] - Appended to the card and link ids to keep them unique when the same product renders more than once on a page (e.g. product-list tabs). Omit to keep the default ids.
 {%- enddoc -%}
 
 {% assign block_settings = block.settings %}
@@ -33,6 +34,11 @@
   endif
 
   assign product_card_id = 'product-card-link-' | append: block.id | append: '-' | append: product.id
+  assign product_card_element_id = 'product-card-' | append: block.id
+  if card_id_suffix != blank
+    assign product_card_id = product_card_id | append: card_id_suffix
+    assign product_card_element_id = product_card_element_id | append: '-' | append: product.id | append: card_id_suffix
+  endif
   assign product_card_gap_value = product_card_gap | default: block_settings.product_card_gap
 
   # variant_to_link drives the featured image used by the main-product view transition.
@@ -63,7 +69,7 @@
   class="product-card size-style"
   style="{% render 'size-style', settings: block_settings %}"
   data-product-id="{{ product.id }}"
-  id="product-card-{{ block.id }}"
+  id="{{ product_card_element_id }}"
   {% if settings.transition_to_main_product %}
     data-product-transition="true"
     data-featured-media-url="{{ featured_media_url }}"

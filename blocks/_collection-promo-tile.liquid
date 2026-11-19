@@ -1,0 +1,464 @@
+{%- doc -%}
+  Promotional image or video tile shown inline in the collection product grid (`main-collection`).
+
+  Output contract (read by `sections/main-collection.liquid`):
+  - Nothing is output on the storefront when the selected media is blank. In the theme editor a placeholder is shown.
+  - Otherwise the block outputs `<!--promo:N,SIZE,SIDE-->` (N = the "Show after product number" setting, SIZE = `2x1`|`2x2`,
+    SIDE = `left`|`right`) immediately followed by one `<li class="product-grid__promo …" data-page="1" ref="cards[]">`.
+    The section splits its captured `content_for 'blocks'` output on `<!--promo:` and echoes each tile after product N,
+    skipping a tile when too few products follow it to fill its row(s) at fixed desktop columns.
+  - The `li` keeps `ref="cards[]"` and `data-page` so `PaginatedList` treats it like a card (page 1 only).
+    It never has the `.product-grid__item` class or `data-product-id` (view transitions key on those).
+{%- enddoc -%}
+
+{%- liquid
+  assign block_settings = block.settings
+
+  if block_settings.media_type == 'video'
+    assign media = block_settings.video
+  else
+    assign media = block_settings.image
+  endif
+
+  assign show_tile = true
+  if media == blank and request.design_mode == false
+    assign show_tile = false
+  endif
+
+  assign title_label = block_settings.highlight_text | append: ' ' | append: block_settings.text | strip
+  if title_label == blank
+    assign title_label = block_settings.link_label
+  endif
+
+  assign media_loading = 'lazy'
+  if block_settings.position < 4
+    assign media_loading = 'eager'
+  endif
+
+  assign sizes = '(min-width: 750px) 50vw, 100vw'
+  assign widths = '416, 640, 832, 1200, 1600, 1920'
+
+  if block_settings.link != blank
+    assign tile_tag = 'a'
+  else
+    assign tile_tag = 'div'
+  endif
+-%}
+
+{%- if show_tile -%}
+<!--promo:{{ block_settings.position }},{{ block_settings.size }},{{ block_settings.side }}-->
+<li
+  class="product-grid__promo product-grid__promo--{{ block_settings.side }} product-grid__promo--{{ block_settings.size }} product-grid__promo--text-{{ block_settings.text_position }}"
+  data-page="1"
+  ref="cards[]"
+  style="
+    --promo-mobile-ratio: {{ block_settings.mobile_ratio }};
+    --promo-font-family: var(--font-{{ block_settings.font }}--family);
+    --promo-font-style: var(--font-{{ block_settings.font }}--style);
+    --promo-font-weight: var(--font-{{ block_settings.font }}--weight);
+    --promo-text-size: {{ block_settings.text_size }}px;
+    --promo-text-color: {{ block_settings.text_color }};
+    --promo-highlight-color: {{ block_settings.highlight_color }};
+    --promo-highlight-text-color: {{ block_settings.highlight_text_color }};
+  "
+  {{ block.shopify_attributes }}
+>
+  <{{ tile_tag }}
+    class="promo-tile"
+    {% if tile_tag == 'a' %}
+      href="{{ block_settings.link }}"
+      {% if title_label != blank %}
+        aria-label="{{ title_label | escape }}"
+      {% endif %}
+    {% endif %}
+  >
+    <div class="promo-tile__media">
+      {%- if media == blank -%}
+        {{ 'hero-apparel-1' | placeholder_svg_tag: 'promo-tile__placeholder' }}
+      {%- elsif block_settings.media_type == 'video' -%}
+        {% render 'video-background-styles' %}
+        <video-background-component
+          class="video-background video-background--cover"
+          aria-hidden="true"
+        >
+          {%- if media.preview_image != blank -%}
+            {{
+              media.preview_image
+              | image_url: width: 1920
+              | image_tag: widths: widths, sizes: sizes, loading: media_loading, alt: ''
+            }}
+          {%- endif -%}
+          <video
+            playsinline
+            muted
+            autoplay
+            loop
+            preload="metadata"
+            ref="videoElement"
+          >
+            {%- for source in media.sources -%}
+              <source
+                data-video-source="{{ source.url }}"
+                type="{{ source.mime_type }}"
+                ref="videoSources[]"
+              >
+            {%- endfor -%}
+          </video>
+        </video-background-component>
+      {%- else -%}
+        {{
+          media
+          | image_url: width: 1920
+          | image_tag: widths: widths, sizes: sizes, loading: media_loading, alt: '', class: 'promo-tile__image'
+        }}
+      {%- endif -%}
+    </div>
+
+    {%- if title_label != blank or block_settings.link_label != blank -%}
+      <span class="promo-tile__overlay">
+        <span class="promo-tile__title">
+          {%- if block_settings.highlight_text != blank -%}
+            <span class="promo-tile__highlight">{{ block_settings.highlight_text | escape }}</span>
+          {%- endif -%}
+          {%- if block_settings.highlight_text != blank and block_settings.text != blank %} {% endif -%}
+          {%- if block_settings.text != blank -%}
+            <span class="promo-tile__text">{{ block_settings.text | escape }}</span>
+          {%- endif -%}
+        </span>
+        {%- if block_settings.link_label != blank -%}
+          <span class="promo-tile__cta">{{ block_settings.link_label | escape }}</span>
+        {%- endif -%}
+      </span>
+    {%- endif -%}
+  </{{ tile_tag }}>
+</li>
+{%- endif -%}
+
+{% stylesheet %}
+  .product-grid__promo {
+    position: relative;
+    grid-column: 1 / -1;
+    min-width: 0;
+    aspect-ratio: var(--promo-mobile-ratio, 4 / 3);
+    list-style: none;
+
+    @media screen and (min-width: 750px) {
+      aspect-ratio: auto;
+      min-height: 16rem;
+    }
+  }
+
+  @media screen and (min-width: 750px) {
+    .product-grid__promo--left {
+      grid-column: 1 / span 2;
+    }
+
+    .product-grid__promo--right {
+      grid-column: span 2 / -1;
+    }
+
+    .product-grid__promo--2x2 {
+      grid-row: span 2;
+    }
+  }
+
+  [product-grid-view='zoom-out'] .product-grid__promo {
+    display: none;
+  }
+
+  .promo-tile {
+    position: absolute;
+    inset: 0;
+    display: block;
+    overflow: hidden;
+    color: var(--promo-text-color);
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  div.promo-tile {
+    cursor: default;
+  }
+
+  .promo-tile:focus-visible {
+    outline: var(--focus-outline-width, 2px) solid currentcolor;
+    outline-offset: calc(-1 * var(--focus-outline-width, 2px) - 2px);
+  }
+
+  .promo-tile__media,
+  .promo-tile__media .video-background {
+    position: absolute;
+    inset: 0;
+  }
+
+  .promo-tile__media :is(img, svg) {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .promo-tile__placeholder {
+    background-color: rgb(var(--color-foreground-rgb) / 0.05);
+  }
+
+  .promo-tile__overlay {
+    position: absolute;
+    inset-inline: 0;
+    inset-block-start: 0;
+    z-index: 1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--gap-xs, 0.25rem) var(--gap-md, 1rem);
+    padding: var(--padding-xl, 1.25rem) var(--padding-2xl, 1.5rem);
+    pointer-events: none;
+  }
+
+  .product-grid__promo--text-bottom .promo-tile__overlay {
+    inset-block: auto 0;
+  }
+
+  .promo-tile__title {
+    font-family: var(--promo-font-family);
+    font-style: var(--promo-font-style);
+    font-weight: var(--promo-font-weight);
+    font-size: clamp(14px, 4.5vw, var(--promo-text-size));
+    line-height: 1.2;
+    min-width: 0;
+
+    @media screen and (min-width: 750px) {
+      font-size: var(--promo-text-size);
+    }
+  }
+
+  .promo-tile__highlight {
+    display: inline-block;
+    padding: 0 0.2em;
+    background-color: var(--promo-highlight-color);
+    color: var(--promo-highlight-text-color);
+  }
+
+  .promo-tile__cta {
+    font-family: var(--font-paragraph--family);
+    font-size: var(--font-paragraph--size);
+    font-weight: var(--font-paragraph--weight);
+    letter-spacing: 0.05em;
+    text-underline-offset: 0.2em;
+    white-space: nowrap;
+  }
+
+  .promo-tile:is(:hover, :focus-visible) .promo-tile__cta {
+    text-decoration: underline;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .promo-tile__media :is(img, video) {
+      transition: scale var(--animation-speed-slow, 0.4s) var(--animation-easing, ease);
+    }
+
+    a.promo-tile:hover .promo-tile__media :is(img, video) {
+      scale: 1.03;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:names.collection_promo_tile",
+  "tag": null,
+  "settings": [
+    {
+      "type": "select",
+      "id": "media_type",
+      "label": "t:settings.media_type",
+      "options": [
+        {
+          "value": "image",
+          "label": "t:options.image"
+        },
+        {
+          "value": "video",
+          "label": "t:options.video"
+        }
+      ],
+      "default": "image"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "t:settings.image",
+      "visible_if": "{{ block.settings.media_type == 'image' }}"
+    },
+    {
+      "type": "video",
+      "id": "video",
+      "label": "t:settings.video",
+      "visible_if": "{{ block.settings.media_type == 'video' }}"
+    },
+    {
+      "type": "text",
+      "id": "highlight_text",
+      "label": "t:settings.highlight_text"
+    },
+    {
+      "type": "text",
+      "id": "text",
+      "label": "t:settings.text"
+    },
+    {
+      "type": "text",
+      "id": "link_label",
+      "label": "t:settings.link_label"
+    },
+    {
+      "type": "url",
+      "id": "link",
+      "label": "t:settings.link"
+    },
+    {
+      "type": "range",
+      "id": "position",
+      "label": "t:settings.show_after_product",
+      "min": 0,
+      "max": 35,
+      "step": 1,
+      "default": 4
+    },
+    {
+      "type": "select",
+      "id": "size",
+      "label": "t:settings.size",
+      "options": [
+        {
+          "value": "2x1",
+          "label": "t:options.size_2x1"
+        },
+        {
+          "value": "2x2",
+          "label": "t:options.size_2x2"
+        }
+      ],
+      "default": "2x1"
+    },
+    {
+      "type": "select",
+      "id": "side",
+      "label": "t:settings.side",
+      "options": [
+        {
+          "value": "left",
+          "label": "t:options.left"
+        },
+        {
+          "value": "right",
+          "label": "t:options.right"
+        }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "select",
+      "id": "text_position",
+      "label": "t:settings.text_position",
+      "options": [
+        {
+          "value": "top",
+          "label": "t:options.top"
+        },
+        {
+          "value": "bottom",
+          "label": "t:options.bottom"
+        }
+      ],
+      "default": "top"
+    },
+    {
+      "type": "select",
+      "id": "mobile_ratio",
+      "label": "t:settings.mobile_aspect_ratio",
+      "options": [
+        {
+          "value": "4 / 3",
+          "label": "t:options.ratio_4_3"
+        },
+        {
+          "value": "1",
+          "label": "t:options.square"
+        },
+        {
+          "value": "3 / 4",
+          "label": "t:options.portrait_tall"
+        },
+        {
+          "value": "16 / 9",
+          "label": "t:options.landscape"
+        }
+      ],
+      "default": "4 / 3"
+    },
+    {
+      "type": "header",
+      "content": "t:content.typography"
+    },
+    {
+      "type": "select",
+      "id": "font",
+      "label": "t:settings.font",
+      "options": [
+        {
+          "value": "heading",
+          "label": "t:options.heading"
+        },
+        {
+          "value": "subheading",
+          "label": "t:options.subheading"
+        },
+        {
+          "value": "body",
+          "label": "t:options.body"
+        },
+        {
+          "value": "accent",
+          "label": "t:options.accent"
+        }
+      ],
+      "default": "body"
+    },
+    {
+      "type": "range",
+      "id": "text_size",
+      "label": "t:settings.size",
+      "min": 14,
+      "max": 64,
+      "step": 1,
+      "unit": "px",
+      "default": 28
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "t:settings.text_color",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "color",
+      "id": "highlight_color",
+      "label": "t:settings.highlight_color",
+      "default": "#A8A24E"
+    },
+    {
+      "type": "color",
+      "id": "highlight_text_color",
+      "label": "t:settings.highlight_text_color",
+      "default": "#FFFFFF"
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:names.collection_promo_tile"
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,107 @@
+{%- doc -%}
+  Renders the tab row of a tabbed product list (`sections/product-list.liquid` in tabs mode).
+  Each tab is a button that controls the matching `TabPanel-{section_id}-{n}` panel rendered by
+  the section. Behaviour (click, arrow keys, Home/End) lives in `assets/product-list-tabs.js`,
+  so this snippet must be rendered inside a `<product-list-tabs>` element.
+  The first tab is selected. The label falls back to the collection title when it is blank.
+
+  @param {object[]} tabs - The `_product-list-tab` blocks. Tabs whose collection is blank or has no products are skipped,
+    matching the panels the section renders, so tab n always controls panel n.
+  @param {string} section_id - The section id, used to build unique tab and panel ids
+
+  @example
+  {% render 'product-list-tablist', tabs: tab_blocks, section_id: section.id %}
+{%- enddoc -%}
+
+{%- comment -%} Provides the shared `.tile-caption` typography role used by the tab labels. {%- endcomment -%}
+{% render 'text-block-styles' %}
+
+<div
+  class="product-list-tabs__list"
+  role="tablist"
+  aria-label="{{ 'accessibility.product_list_tabs' | t }}"
+  ref="tablist"
+>
+  {%- assign tab_index = 0 -%}
+  {%- for tab in tabs -%}
+    {%- liquid
+      assign tab_collection = tab.settings.collection
+      if tab_collection == blank or tab_collection.products_count == 0
+        continue
+      endif
+      assign tab_index = tab_index | plus: 1
+      assign tab_label = tab.settings.label | default: tab_collection.title
+    -%}
+    <button
+      type="button"
+      class="product-list-tabs__tab tile-caption"
+      role="tab"
+      id="Tab-{{ section_id }}-{{ tab_index }}"
+      aria-controls="TabPanel-{{ section_id }}-{{ tab_index }}"
+      aria-selected="{% if tab_index == 1 %}true{% else %}false{% endif %}"
+      tabindex="{% if tab_index == 1 %}0{% else %}-1{% endif %}"
+      data-collection-url="{{ tab_collection.url }}"
+      ref="tabs[]"
+      on:click="/selectTab"
+      on:keydown="/onTabKeydown"
+      {{ tab.shopify_attributes }}
+    >
+      {{- tab_label | escape -}}
+    </button>
+  {%- endfor -%}
+</div>
+
+{% stylesheet %}
+  .product-list-tabs__list {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: var(--gap-xl, 1.5rem);
+    width: 100%;
+    overflow-x: auto;
+    white-space: nowrap;
+    scrollbar-width: none;
+    overscroll-behavior-x: contain;
+  }
+
+  .product-list-tabs__list::-webkit-scrollbar {
+    display: none;
+  }
+
+  .product-list-tabs__tab {
+    flex: 0 0 auto;
+    margin: 0;
+    padding: 0 0 var(--padding-2xs, 4px);
+    border: 0;
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+    cursor: pointer;
+    /* Drive colour through --color so the shared `.tile-caption { color: var(--color) }` rule resolves to it. */
+    --color: rgb(var(--color-foreground-rgb) / var(--opacity-50));
+    color: var(--color);
+    text-decoration-line: none;
+    text-underline-offset: 0.4em;
+    text-decoration-thickness: 1px;
+    transition: color var(--animation-speed) var(--animation-easing);
+  }
+
+  .product-list-tabs__tab:hover,
+  .product-list-tabs__tab[aria-selected='true'] {
+    --color: var(--color-foreground);
+  }
+
+  .product-list-tabs__tab[aria-selected='true'] {
+    text-decoration-line: underline;
+  }
+
+  .product-list-tabs__tab:focus-visible {
+    outline: var(--focus-outline-width, 2px) solid currentcolor;
+    outline-offset: var(--focus-outline-offset, 2px);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .product-list-tabs__tab {
+      transition: none;
+    }
+  }
+{% endstylesheet %}

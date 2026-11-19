@@ -101,8 +101,17 @@
     assign has_navigation_bar = true
   endif
 
+  # Icon order: with account_first, the account renders in the header row before search
+  assign show_account = true
+  if section.settings.icon_order == 'account_first' and shop.customer_accounts_enabled
+    assign show_account = false
+    capture account
+      render 'header-account', customer_account_menu: section.settings.customer_account_menu, display_style: section.settings.actions_display_style, section: section
+    endcapture
+  endif
+
   capture actions
-    render 'header-actions', customer_account_menu: section.settings.customer_account_menu, display_style: section.settings.actions_display_style, section: section
+    render 'header-actions', customer_account_menu: section.settings.customer_account_menu, display_style: section.settings.actions_display_style, section: section, show_account: show_account, show_wishlist: section.settings.show_wishlist, wishlist_url: section.settings.wishlist_url
   endcapture
 
   if shop.customer_accounts_enabled
@@ -377,6 +386,9 @@
       --header-actions-font-weight: var(--font-{{ section.settings.actions_font | default: 'heading' }}--weight);
       --header-actions-text-case: {{ section.settings.actions_text_case | default: 'none' }};
     {% endif %}
+    {% if section.settings.account_icon_color != blank %}
+      --header-account-icon-color: {{ section.settings.account_icon_color }};
+    {% endif %}
   "
 >
   <script>
@@ -469,6 +481,7 @@
         logo: logo,
         menu: menu,
         actions: actions,
+        account: account,
         localization: localization_markup,
         search: search,
         drawer_search: drawer_search
@@ -778,7 +791,7 @@
 
   .header__row {
     /* The account component uses a different background color, but we need to override it to inherit the color of the header row */
-    --color-account-icon: var(--color-foreground);
+    --color-account-icon: var(--header-account-icon-color, var(--color-foreground));
 
     position: relative;
 
@@ -854,6 +867,15 @@
 
     .overflow-menu::part(list) {
       justify-content: flex-end;
+    }
+  }
+
+  /* Icon order "account first": the account sits outside header-actions, so the column gap would push it
+     away from the next icon. Pull it in so account, search, wishlist and cart keep the same spacing as the
+     adjacent icons inside header-actions. Only matches when the account is a direct column child. */
+  @media screen and (min-width: 750px) {
+    #header-component[data-menu-style='menu'] .header__column--right > .account-button:not(.account-button--text) {
+      margin-inline-end: calc(var(--gap-md) - var(--gap-xl));
     }
   }
 
@@ -939,6 +961,11 @@
         grid-area: rightB;
         justify-content: flex-end;
       }
+
+      /* Account rendered before search (icon order setting) sits next to the cart */
+      .header__column > .account-button {
+        grid-area: rightA;
+      }
     }
   }
 
@@ -983,6 +1010,10 @@
     header-actions {
       grid-area: rightB;
       justify-content: flex-end;
+    }
+
+    .header__column > .account-button {
+      grid-area: rightA;
     }
   }
 
@@ -1356,6 +1387,22 @@
       "default": "customer-account-main-menu"
     },
     {
+      "type": "select",
+      "id": "icon_order",
+      "label": "t:settings.icon_order",
+      "options": [
+        {
+          "value": "search_first",
+          "label": "t:options.search_account_cart"
+        },
+        {
+          "value": "account_first",
+          "label": "t:options.account_search_cart"
+        }
+      ],
+      "default": "search_first"
+    },
+    {
       "type": "header",
       "content": "t:content.search"
     },
@@ -1398,6 +1445,23 @@
       ],
       "default": "top",
       "visible_if": "{{ section.settings.show_search }}"
+    },
+    {
+      "type": "header",
+      "content": "t:content.wishlist"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_wishlist",
+      "label": "t:settings.show_wishlist",
+      "default": false
+    },
+    {
+      "type": "url",
+      "id": "wishlist_url",
+      "label": "t:settings.wishlist_url",
+      "info": "t:info.wishlist_url",
+      "visible_if": "{{ section.settings.show_wishlist }}"
     },
     {
       "type": "header",
@@ -1719,6 +1783,12 @@
       "type": "color",
       "id": "text_color_top",
       "label": "t:settings.top_row_text",
+      "placeholder": "t:settings.default"
+    },
+    {
+      "type": "color",
+      "id": "account_icon_color",
+      "label": "t:settings.account_icon_color",
       "placeholder": "t:settings.default"
     },
     {

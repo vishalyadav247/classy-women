@@ -27,8 +27,10 @@
   style="
     {%- render 'spacing-style', settings: section.settings %}
     {% render 'border-override', settings: section.settings %}
-    --media-height: {{ section.settings.media_height }};
+    --media-height: {% if section.settings.media_height == 'custom' %}{{ section.settings.media_height_custom }}vw{% else %}{{ section.settings.media_height }}{% endif %};
     {%- case section.settings.media_height %}
+      {% when 'custom' %}
+        --media-height-mobile: {{ section.settings.media_height_custom_mobile }}vw;
       {% when '50svh' %}
         --media-height-mobile: 30svh;
       {% when '60svh' %}
@@ -198,6 +200,19 @@
     }
   }
 
+  /* Content-only layout: the media block rendered nothing (e.g. "Hide when empty" with no image) */
+  .section--page-width.media-with-content:not(:has(.media-block)) {
+    --media-with-content-grid-columns: var(--full-page-grid-with-margins);
+
+    grid-template-areas: 'margin-left content margin-right';
+  }
+
+  .section--full-width.media-with-content:not(:has(.media-block)) {
+    --media-with-content-grid-columns: 1fr;
+
+    grid-template-areas: 'content';
+  }
+
   .media-with-content[data-shopify-visual-preview] {
     --hero-min-height: 500px;
 
@@ -272,9 +287,35 @@
         {
           "value": "100svh",
           "label": "t:options.full_screen"
+        },
+        {
+          "value": "custom",
+          "label": "t:options.custom"
         }
       ],
       "default": "80svh"
+    },
+    {
+      "type": "range",
+      "id": "media_height_custom",
+      "label": "t:settings.desktop_height",
+      "min": 10,
+      "max": 60,
+      "step": 1,
+      "unit": "vw",
+      "default": 20,
+      "visible_if": "{{ section.settings.media_height == 'custom' }}"
+    },
+    {
+      "type": "range",
+      "id": "media_height_custom_mobile",
+      "label": "t:settings.mobile_height",
+      "min": 30,
+      "max": 150,
+      "step": 5,
+      "unit": "vw",
+      "default": 75,
+      "visible_if": "{{ section.settings.media_height == 'custom' }}"
     },
     {
       "type": "select",

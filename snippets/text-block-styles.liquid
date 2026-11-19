@@ -98,6 +98,47 @@
     margin-block: var(--font-h6--spacing);
   }
 
+  /* Shared typography roles. Bare classes are utilities for markup outside text blocks. */
+  .section-heading,
+  .text-block.section-heading > *,
+  .text-block.section-heading :is(h1, h2, h3, h4, h5, h6, p) {
+    font-family: var(--font-section-heading--family);
+    font-style: var(--font-section-heading--style);
+    font-weight: var(--font-section-heading--weight);
+    font-size: var(--font-section-heading--size);
+    line-height: var(--font-section-heading--line-height);
+    letter-spacing: var(--font-section-heading--letter-spacing);
+    text-transform: var(--font-section-heading--case);
+    color: var(--color);
+  }
+
+  .tile-caption,
+  .text-block.tile-caption > *,
+  .text-block.tile-caption :is(h1, h2, h3, h4, h5, h6, p) {
+    font-family: var(--font-tile-caption--family);
+    font-style: var(--font-tile-caption--style);
+    font-weight: var(--font-tile-caption--weight);
+    font-size: var(--font-tile-caption--size);
+    line-height: var(--font-tile-caption--line-height);
+    letter-spacing: var(--font-tile-caption--letter-spacing);
+    text-transform: var(--font-tile-caption--case);
+    color: var(--color);
+  }
+
+  .text-block:not(.text-block--full-width):is(.section-heading, .tile-caption) {
+    text-wrap: balance;
+  }
+
+  .text-block.text-block:is(.section-heading, .tile-caption) a {
+    text-decoration-line: none;
+    color: currentColor;
+
+    &:hover {
+      text-decoration-line: none;
+      color: currentColor;
+    }
+  }
+
   .text-block p,
   .text-block.p > * {
     margin-block: var(--font-paragraph--spacing);

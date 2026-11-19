@@ -53,6 +53,19 @@
     assign show_arrows = false
   endif
 
+  assign section_modifier_class = ''
+  assign section_modifier_style = ''
+  if section.settings.pagination_alignment == 'right'
+    assign section_modifier_class = section_modifier_class | append: ' slideshow-section--pagination-end'
+  endif
+  if section.settings.slide_height == 'custom'
+    assign section_modifier_class = section_modifier_class | append: ' slideshow-section--custom-height'
+    capture section_modifier_style
+      echo ' --slide-height-custom-mobile: ' | append: section.settings.slide_height_mobile | append: 'vw;'
+      echo ' --slide-height-custom-desktop: ' | append: section.settings.slide_height_desktop | append: 'vw;'
+    endcapture
+  endif
+
   assign rounded_slide_corners = false
   if section.settings.display_mode == 'full_frame' and section.settings.section_width == 'page-width'
     assign rounded_slide_corners = true
@@ -75,8 +88,8 @@
   class="section-background{% if section.settings.background_color != blank %} color-custom-{{ section.id }}{% endif %}"
 ></div>
 <div
-  class="slideshow-section spacing-style section {{ section_width_class }}{% if section.settings.background_color != blank %} color-custom-{{ section.id }}{% endif %} disable-section-top-offset"
-  style="{% render 'spacing-padding', settings: section.settings %}; --slideshow-gap: {{ section.settings.slideshow_gap }}px;{% if rounded_slide_corners %} --corner-radius: {{ section.settings.corner_radius }}px;{% endif %}"
+  class="slideshow-section spacing-style section {{ section_width_class }}{% if section.settings.background_color != blank %} color-custom-{{ section.id }}{% endif %} disable-section-top-offset{{ section_modifier_class }}"
+  style="{% render 'spacing-padding', settings: section.settings %}; --slideshow-gap: {{ section.settings.slideshow_gap }}px;{% if rounded_slide_corners %} --corner-radius: {{ section.settings.corner_radius }}px;{% endif %}{{ section_modifier_style }}"
 >
   <h2 class="visually-hidden">{{ 'accessibility.slideshow' | t }}</h2>
   {% render 'slideshow',
@@ -101,6 +114,20 @@
 
     slideshow-arrows .slideshow-control:last-of-type {
       margin-inline-end: var(--padding-xs);
+    }
+
+    /* Custom media height (vw), used by on-media content. Below-media rows come from slideshow-slide. */
+    &.slideshow-section--custom-height slideshow-slides {
+      min-height: var(--slide-height-custom-mobile);
+
+      @media screen and (min-width: 750px) {
+        min-height: var(--slide-height-custom-desktop);
+      }
+    }
+
+    &.slideshow-section--pagination-end slideshow-controls[controls-on-media] {
+      justify-content: flex-end;
+      padding-inline-end: var(--page-margin);
     }
 
     .slideshow--with-hints--mobile-with-hints {
@@ -275,10 +302,36 @@
         {
           "value": "large",
           "label": "t:options.large"
+        },
+        {
+          "value": "custom",
+          "label": "t:options.custom"
         }
       ],
       "default": "medium",
       "label": "t:settings.media_height"
+    },
+    {
+      "type": "range",
+      "id": "slide_height_desktop",
+      "label": "t:settings.desktop_height",
+      "min": 15,
+      "max": 100,
+      "step": 1,
+      "unit": "vw",
+      "default": 34,
+      "visible_if": "{{ section.settings.slide_height == 'custom' }}"
+    },
+    {
+      "type": "range",
+      "id": "slide_height_mobile",
+      "label": "t:settings.mobile_height",
+      "min": 50,
+      "max": 200,
+      "step": 5,
+      "unit": "vw",
+      "default": 125,
+      "visible_if": "{{ section.settings.slide_height == 'custom' }}"
     },
     {
       "type": "select",
@@ -374,6 +427,23 @@
         }
       ],
       "default": "dots"
+    },
+    {
+      "type": "select",
+      "id": "pagination_alignment",
+      "label": "t:settings.pagination_alignment",
+      "options": [
+        {
+          "value": "center",
+          "label": "t:options.center"
+        },
+        {
+          "value": "right",
+          "label": "t:options.right"
+        }
+      ],
+      "default": "center",
+      "visible_if": "{{ section.settings.slideshow_controls_style != 'none' }}"
     },
     {
       "type": "checkbox",

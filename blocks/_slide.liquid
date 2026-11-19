@@ -68,11 +68,46 @@
       -%}
 
       {%- if block_settings.media_type_1 == 'image' -%}
-        {{
-          block_settings.image_1
-          | image_url: width: 3840
-          | image_tag: height: height, sizes: sizes, widths: widths, class: 'slide__image', loading: loading, fetchpriority: fetchpriority
-        }}
+        {%- if block_settings.image_1_mobile != blank -%}
+          {%- liquid
+            assign mobile_image = block_settings.image_1_mobile
+            assign mobile_height = mobile_image.width | divided_by: mobile_image.aspect_ratio | round
+            assign mobile_srcset = ''
+            assign mobile_widths = '375, 550, 750, 1100, 1500' | split: ', '
+            for mobile_width in mobile_widths
+              assign mobile_width_number = mobile_width | plus: 0
+              if mobile_width_number <= mobile_image.width
+                assign mobile_src = mobile_image | image_url: width: mobile_width_number
+                assign mobile_srcset = mobile_srcset | append: mobile_src | append: ' ' | append: mobile_width | append: 'w, '
+              endif
+            endfor
+            if mobile_srcset == blank
+              assign mobile_src = mobile_image | image_url: width: mobile_image.width
+              assign mobile_srcset = mobile_src | append: ' ' | append: mobile_image.width | append: 'w, '
+            endif
+            assign mobile_srcset = mobile_srcset | strip | remove_last: ','
+          -%}
+          <picture>
+            <source
+              media="(max-width: 749px)"
+              srcset="{{ mobile_srcset }}"
+              sizes="100vw"
+              width="{{ mobile_image.width }}"
+              height="{{ mobile_height }}"
+            >
+            {{
+              block_settings.image_1
+              | image_url: width: 3840
+              | image_tag: height: height, sizes: sizes, widths: widths, class: 'slide__image', loading: loading, fetchpriority: fetchpriority
+            }}
+          </picture>
+        {%- else -%}
+          {{
+            block_settings.image_1
+            | image_url: width: 3840
+            | image_tag: height: height, sizes: sizes, widths: widths, class: 'slide__image', loading: loading, fetchpriority: fetchpriority
+          }}
+        {%- endif -%}
       {%- else -%}
         {%- if block_settings.video_1.preview_image -%}
 
@@ -102,8 +137,37 @@
       {{ placeholder_name | placeholder_svg_tag: 'slide__image' }}
     {%- endif -%}
   </div>
+  {% capture slide_blocks %}{% content_for 'blocks' %}{% endcapture %}
+  {%- if block_settings.link != blank -%}
+    {%- liquid
+      capture link_label
+        render 'link-label', url: block_settings.link
+      endcapture
+
+      # External and relative URLs get no label from `link-label`: fall back to the slide's first heading, then a generic name.
+      if link_label == blank
+        assign heading_parts = slide_blocks | split: '</h'
+        if heading_parts.size > 1
+          assign heading_markup = heading_parts.first | split: '<h' | last
+          assign link_label = '<h' | append: heading_markup | strip_html | strip_newlines | strip | replace: '"', '&quot;'
+        endif
+      endif
+
+      if link_label == blank
+        assign link_label = 'accessibility.slide_link' | t
+      endif
+    -%}
+    <a
+      href="{{ block_settings.link }}"
+      class="slide__link"
+      aria-label="{{ link_label | strip }}"
+      {% if block_settings.open_in_new_tab %}
+        target="_blank" rel="noopener"
+      {% endif %}
+    ></a>
+  {%- endif -%}
   <div
-    class="spacing-style slide__content {{ class }}{% if preview_image or block_settings.toggle_overlay %} background-transparent{% endif %}"
+    class="spacing-style slide__content {{ class }}{% if preview_image or block_settings.toggle_overlay %} background-transparent{% endif %}{% if request.design_mode %} slide__content--design-mode{% endif %}"
     style="{% render 'spacing-style', settings: block_settings %}"
     {{ block.shopify_attributes }}
   >
@@ -114,10 +178,19 @@
       {% if block_settings.vertical_on_mobile %}mobile-column{% endif %}"
       style="{% render 'layout-panel-style', settings: block_settings %}"
     >
-      {% content_for 'blocks' %}
+      {{ slide_blocks }}
     </div>
   </div>
 {% endcapture %}
+
+{% liquid
+  assign custom_height_mobile = nil
+  assign custom_height_desktop = nil
+  if section.settings.slide_height == 'custom'
+    assign custom_height_mobile = section.settings.slide_height_mobile
+    assign custom_height_desktop = section.settings.slide_height_desktop
+  endif
+%}
 
 {% render 'slideshow-slide',
   index: block_index,
@@ -125,6 +198,8 @@
   children: children,
   attributes: block.shopify_attributes,
   slide_size: section.settings.slide_height,
+  custom_height_mobile: custom_height_mobile,
+  custom_height_desktop: custom_height_desktop,
   navigate_to_slide: true
 %}
 
@@ -150,6 +225,30 @@
     margin: auto;
   }
 
+  .slide__link {
+    position: absolute;
+    inset: 0;
+    z-index: var(--layer-flat);
+  }
+
+  .slide__link ~ .slide__content {
+    pointer-events: none;
+
+    :is(a, button, input, textarea, select, details, summary) {
+      pointer-events: auto;
+    }
+  }
+
+  /* Below-media content is static by default; keep it above the slide link so its buttons stay clickable. */
+  .slideshow--content-below-media .slide__link ~ .slide__content {
+    position: relative;
+  }
+
+  /* Keeps blocks selectable in the theme editor. */
+  .slide__link ~ .slide__content--design-mode {
+    pointer-events: auto;
+  }
+
   .slide__content.background-transparent {
     background-color: transparent;
   }
@@ -162,7 +261,12 @@
     position: absolute;
   }
 
+  .slide__image-container > picture {
+    display: contents;
+  }
+
   .slide__image-container > .slide__image,
+  .slide__image-container > picture > .slide__image,
   .slide__image-container > .slide__video,
   .slide__image-container > .slide__video-poster {
     position: relative;
@@ -248,10 +352,28 @@
       "visible_if": "{{ block.settings.media_type_1 == 'image' }}"
     },
     {
+      "type": "image_picker",
+      "id": "image_1_mobile",
+      "label": "t:settings.mobile_image",
+      "visible_if": "{{ block.settings.media_type_1 == 'image' }}"
+    },
+    {
       "type": "video",
       "id": "video_1",
       "label": "t:settings.video",
       "visible_if": "{{ block.settings.media_type_1 == 'video' }}"
+    },
+    {
+      "type": "url",
+      "id": "link",
+      "label": "t:settings.link"
+    },
+    {
+      "type": "checkbox",
+      "id": "open_in_new_tab",
+      "label": "t:settings.open_new_tab",
+      "default": false,
+      "visible_if": "{{ block.settings.link != blank }}"
     },
     {
       "type": "header",

@@ -1,6 +1,6 @@
 # Spec 001: Global header and footer (announcement bar, header, footer)
 
-- **Status:** Draft
+- **Status:** Done (2026-11-19)
 - **Mockup(s):** `.claude/design/home.png`, `collection.png`, `product.png`, `shopByVideo.png`. Covers the top band of every mockup (announcement bar and header) and the bottom band (footer accordions, logo and social row, copyright bar). Also covers two floating page-level buttons: the cart button on `shopByVideo.png` and the back-to-top button on `collection.png`.
 - **Template(s) affected:** all storefront templates (`index`, `collection`, `product`, `page.shop-by-video`, plus every other template that uses the global header and footer)
 - **Design-map rows:** G1, G2, G3
@@ -34,7 +34,7 @@ Every page gets the same branded frame. A rotating announcement bar carries prom
 - **Layout (desktop):**
   - A single row with the message centred horizontally.
   - A "‹" previous arrow and a "›" next arrow sit symmetrically on either side of the message, close to the centre column (about 300–400 px from centre at 1920 px) rather than at the page edges.
-  - Very light grey background, dark text, small type. The bar is about 50 px tall at 1920 px `[NEEDS CLARIFICATION: exact height, background hex, font and size]`.
+  - Very light grey background, dark text, small type. The bar is about 50 px tall at 1920 px `[RESOLVED — see Clarifications log: exact height, background hex, font and size]`.
   - A message that has a link is shown underlined. A message without a link is plain text.
 - **Layout (mobile):** `[ASSUMPTION]` Same single row at full width with the arrows near the screen edges. Long messages wrap to at most 2 lines or are truncated; they never overlap the arrows.
 - **Interactions & states:**
@@ -66,7 +66,7 @@ Every page gets the same branded frame. A rotating announcement bar carries prom
   - Visibility of each icon: account, search, wishlist, cart.
   - Wishlist icon link destination, which is set by spec 002.
   - Header colour scheme.
-  - Sticky behaviour `[NEEDS CLARIFICATION]`.
+  - Sticky behaviour `[RESOLVED — see Clarifications log]`.
 - **Data-driven content:**
   - Cart item count, shown in the cart icon bubble.
   - Customer logged-in state, which may affect the account icon (see Open questions).
@@ -76,14 +76,14 @@ Every page gets the same branded frame. A rotating announcement bar carries prom
   - Left group: the logo, then the main menu directly to its right (left-aligned, not centred). Menu items are small, regular-weight, dark text spaced evenly.
   - Right group, aligned to the right gutter, in this order: account (person icon, shown in an accent colour, orange/gold, in every mockup), search (magnifier), wishlist (heart outline), cart (cart outline).
   - The cart shows a small circular dark count bubble at its top-right. The wishlist icon shows no bubble in the mockups.
-  - The row is about 100 px tall at 1920 px `[NEEDS CLARIFICATION: exact height, menu font and size, icon size, accent colour hex]`.
+  - The row is about 100 px tall at 1920 px `[RESOLVED — see Clarifications log: exact height, menu font and size, icon size, accent colour hex]`.
 - **Layout (mobile):** `[ASSUMPTION]`
   - The menu collapses into a hamburger icon on the left that opens a drawer listing the same menu items. The logo sits next to it or centred.
   - On the right, search and cart stay visible. Account and wishlist move into the menu drawer, or stay as icons if space allows. The cart bubble stays visible.
   - The announcement bar stays above the header.
 - **Interactions & states:**
-  - Hover on menu links shows an underline or colour change `[NEEDS CLARIFICATION: hover style]`. The current page's link is shown as active `[NEEDS CLARIFICATION: whether an active-state style is wanted]`.
-  - Whether menu items with child links open a dropdown or mega menu is not shown `[NEEDS CLARIFICATION]`.
+  - Hover on menu links shows an underline or colour change `[RESOLVED — see Clarifications log: hover style]`. The current page's link is shown as active `[RESOLVED — see Clarifications log: whether an active-state style is wanted]`.
+  - Whether menu items with child links open a dropdown or mega menu is not shown `[RESOLVED — see Clarifications log]`.
   - Account goes to login or the account page. Search opens Horizon's search (modal or page). Cart opens the cart drawer or cart page according to the theme's cart setting. Wishlist goes to the wishlist destination (spec 002).
   - Cart bubble: hidden at 0 items. Shows the item count at 1 or more items and updates without a page reload when items are added or removed. `[ASSUMPTION]` Large counts are capped visually (e.g. "99+") so they stay inside the bubble.
   - Every icon is a focusable link or button with a translatable accessible label.
@@ -104,7 +104,7 @@ Every page gets the same branded frame. A rotating announcement bar carries prom
 - **Merchant-editable content:**
   - **Link groups (accordion rows):** three, in order: "Top Searched on Miraggio" (placeholder brand), "Purposeful Picks", "Get Support". Each has an editable title and its own content.
   - **Content of an open group:** link lists, optionally split into titled sub-groups. Observed on home:
-    - "Top Searched on …" has sub-group headings "Shop by Category", "Featured Collections", "Editorial" and "Others". Each heading is followed by links laid out across 4 columns. Examples: Trendy Tote Bags, Cute Shoulder Bags, Mini Bags for Women, Stylish Sling Bags, Clutches & Purses, Small Bags for women, Cross body Bags for Ladies, Wallets & Card Holders for women, Side Bags for Girls, Cute Bag Charms, Laptop Bags for Women, Summer Scoop, Holiday Collection, Capsule Collection, Beyond Basics, Ayesbore Collection, Pieces Collection, Love Collection, Blogs, Under 1999, Shop by Video, Best Sellers, A/W 26 Collection. Several are unreadable at mockup resolution `[NEEDS CLARIFICATION: full link list]`.
+    - "Top Searched on …" has sub-group headings "Shop by Category", "Featured Collections", "Editorial" and "Others". Each heading is followed by links laid out across 4 columns. Examples: Trendy Tote Bags, Cute Shoulder Bags, Mini Bags for Women, Stylish Sling Bags, Clutches & Purses, Small Bags for women, Cross body Bags for Ladies, Wallets & Card Holders for women, Side Bags for Girls, Cute Bag Charms, Laptop Bags for Women, Summer Scoop, Holiday Collection, Capsule Collection, Beyond Basics, Ayesbore Collection, Pieces Collection, Love Collection, Blogs, Under 1999, Shop by Video, Best Sellers, A/W 26 Collection. Several are unreadable at mockup resolution `[RESOLVED — see Clarifications log: full link list]`.
     - "Purposeful Picks": Women Travel Bags, Night Out Bags, Everyday Bags, Women Office Bags (4 columns, one row).
     - "Get Support": Track My Order, FAQs, Returns & Exchange, Corporate Gifting, Terms of Service, Privacy Policy (4 columns).
     - All link text and URLs are merchant content (preferably Shopify navigation menus).
@@ -116,12 +116,12 @@ Every page gets the same branded frame. A rotating announcement bar carries prom
   - Footer colour scheme.
 - **Data-driven content:** the current year, if automatic; the shop name as fallback text.
 - **Layout (desktop):**
-  - The footer background is light grey (about #EBEBEB to #EFEFEF visually `[NEEDS CLARIFICATION: exact hex]`) and spans the full width.
+  - The footer background is light grey (about #EBEBEB to #EFEFEF visually `[RESOLVED — see Clarifications log: exact hex]`) and spans the full width.
   - **Accordion rows:** full width, each about 70 px tall at 1920 px, with a small bold title on the left (aligned to the page gutter) and a chevron-down icon on the right gutter. Thin horizontal dividers separate the rows.
   - **Open group panel:** sits below its title. Sub-group headings are small and bold, each followed by links in a 4-column grid with equal column widths spanning the content width, flowing row by row. Link text is small and regular weight.
   - **Brand row:** sits below the accordions, separated by a divider. Logo on the left. "Follow Us On" label plus the social icons (Facebook, Instagram, YouTube, in that order) on the right.
   - **Copyright bar:** sits below the brand row, separated by a divider. Copyright text is centred and very small.
-  - **Difference between pages:** on home, all three groups render open with their links visible (the brief said only the first; on close inspection of `home.png` "Purposeful Picks" and "Get Support" also show links). On collection, product and shopByVideo, all three groups are collapsed. `[NEEDS CLARIFICATION: is "open on home, collapsed elsewhere" a per-template requirement, or is the home mockup just showing the groups opened for illustration?]`
+  - **Difference between pages:** on home, all three groups render open with their links visible (the brief said only the first; on close inspection of `home.png` "Purposeful Picks" and "Get Support" also show links). On collection, product and shopByVideo, all three groups are collapsed. `[RESOLVED — see Clarifications log: is "open on home, collapsed elsewhere" a per-template requirement, or is the home mockup just showing the groups opened for illustration?]`
 - **Layout (mobile):** `[ASSUMPTION]`
   - The accordion rows stay full width and collapsed by default on every page.
   - The link grid inside an open group reflows to 2 columns, then 1 column on very small screens.
@@ -133,7 +133,7 @@ Every page gets the same branded frame. A rotating announcement bar carries prom
   - A group with no links is not rendered.
   - A sub-group with no links has its heading hidden.
   - A social icon without a URL is not rendered. With no social URLs at all, the "Follow Us On" label is hidden too.
-  - Link hover style `[NEEDS CLARIFICATION]` (`[ASSUMPTION]` an underline).
+  - Link hover style `[RESOLVED — see Clarifications log]` (`[ASSUMPTION]` an underline).
   - Social icons open in a new tab `[ASSUMPTION]`.
 - **Acceptance criteria:**
   - [ ] AC3.1 The footer renders on all four mockup page types in this order: accordion rows, brand row (logo + social), copyright bar.
@@ -155,13 +155,13 @@ Every page gets the same branded frame. A rotating announcement bar carries prom
   - **Back-to-top button:** `collection.png` shows a circular black button with a white up arrow at the bottom right, overlapping the footer's social area at the end of the page.
 - **Merchant-editable content:**
   - Enable or disable each button.
-  - `[NEEDS CLARIFICATION]` Which templates show the floating cart button (only shop-by-video, or all pages).
-  - `[NEEDS CLARIFICATION]` Which templates show back-to-top (only collection, or all pages).
+  - `[RESOLVED — see Clarifications log]` Which templates show the floating cart button (only shop-by-video, or all pages).
+  - `[RESOLVED — see Clarifications log]` Which templates show back-to-top (only collection, or all pages).
 - **Data-driven content:** the cart item count in the floating cart bubble, which matches the header bubble.
 - **Layout (desktop):**
   - Floating cart: a circle about 64 px across at 1920 px with a white fill, thin grey border and a cart icon, about 30 px from the right viewport edge.
   - Back-to-top: a circle of similar size in solid black with a white chevron-up icon, bottom-right of the viewport.
-  - `[NEEDS CLARIFICATION: exact offsets, sizes]`
+  - `[RESOLVED — see Clarifications log: exact offsets, sizes]`
 - **Layout (mobile):** `[ASSUMPTION]` Same position (right edge), slightly smaller. The two buttons never overlap each other when both are enabled; back-to-top stacks above the cart button. Neither covers the sticky add-to-cart or the cart drawer.
 - **Interactions & states:**
   - Floating cart opens the cart drawer or page, the same as the header cart. Its bubble is hidden at 0 items and updates live.
@@ -174,22 +174,34 @@ Every page gets the same branded frame. A rotating announcement bar carries prom
   - [ ] AC4.4 Both buttons are keyboard operable with translatable accessible labels, and they never overlap each other.
 
 ## Open questions
-- `[NEEDS CLARIFICATION]` Fonts (family, weights, sizes) for the announcement text, menu items, footer titles, footer links and copyright.
-- `[NEEDS CLARIFICATION]` Exact colours: announcement bar background, header divider, account icon accent (orange/gold), cart bubble, footer background, footer dividers.
-- `[NEEDS CLARIFICATION]` Exact heights and spacing: announcement bar, header row, accordion rows, logo size, icon size.
-- `[NEEDS CLARIFICATION]` Is the coloured account icon a permanent brand accent, or does it indicate the logged-in state?
-- `[NEEDS CLARIFICATION]` Should the header stick to the top on scroll? Should the announcement bar stick with it?
-- `[NEEDS CLARIFICATION]` Do any main-menu items (e.g. "Shop by Category", "Featured Collections") open a dropdown or mega menu? If so, what is the content and layout?
-- `[NEEDS CLARIFICATION]` Menu link hover and active-page styles, and footer link hover style.
-- `[NEEDS CLARIFICATION]` Announcement bar: does it autoplay, and at what interval? Full list of messages and links.
-- `[NEEDS CLARIFICATION]` Footer: on home, should the groups be expanded by default while being collapsed on other pages (per-template default), or is `home.png` only illustrating the expanded state? Should it be just the first group or all three (the mockup shows all three with links)?
-- `[NEEDS CLARIFICATION]` The full, readable footer link list for every group and sub-group, including "Editorial" and "Others".
-- `[NEEDS CLARIFICATION]` The full set of social networks to support beyond Facebook, Instagram and YouTube.
-- `[NEEDS CLARIFICATION]` Should the copyright year update automatically or be fixed text?
-- `[NEEDS CLARIFICATION]` Floating cart button: shop-by-video only or site-wide? Does it ever appear on desktop when the header cart is visible?
-- `[NEEDS CLARIFICATION]` Back-to-top button: collection only or site-wide? When should it appear?
-- `[NEEDS CLARIFICATION]` Should the wishlist icon show a count bubble like the cart? (Owned by spec 002; the placement here assumes no bubble, matching the mockups.)
+- `[RESOLVED — see Clarifications log]` Fonts (family, weights, sizes) for the announcement text, menu items, footer titles, footer links and copyright.
+- `[RESOLVED — see Clarifications log]` Exact colours: announcement bar background, header divider, account icon accent (orange/gold), cart bubble, footer background, footer dividers.
+- `[RESOLVED — see Clarifications log]` Exact heights and spacing: announcement bar, header row, accordion rows, logo size, icon size.
+- `[RESOLVED — see Clarifications log]` Is the coloured account icon a permanent brand accent, or does it indicate the logged-in state?
+- `[RESOLVED — see Clarifications log]` Should the header stick to the top on scroll? Should the announcement bar stick with it?
+- `[RESOLVED — see Clarifications log]` Do any main-menu items (e.g. "Shop by Category", "Featured Collections") open a dropdown or mega menu? If so, what is the content and layout?
+- `[RESOLVED — see Clarifications log]` Menu link hover and active-page styles, and footer link hover style.
+- `[RESOLVED — see Clarifications log]` Announcement bar: does it autoplay, and at what interval? Full list of messages and links.
+- `[RESOLVED — see Clarifications log]` Footer: on home, should the groups be expanded by default while being collapsed on other pages (per-template default), or is `home.png` only illustrating the expanded state? Should it be just the first group or all three (the mockup shows all three with links)?
+- `[RESOLVED — see Clarifications log]` The full, readable footer link list for every group and sub-group, including "Editorial" and "Others".
+- `[RESOLVED — see Clarifications log]` The full set of social networks to support beyond Facebook, Instagram and YouTube.
+- `[RESOLVED — see Clarifications log]` Should the copyright year update automatically or be fixed text?
+- `[RESOLVED — see Clarifications log]` Floating cart button: shop-by-video only or site-wide? Does it ever appear on desktop when the header cart is visible?
+- `[RESOLVED — see Clarifications log]` Back-to-top button: collection only or site-wide? When should it appear?
+- `[RESOLVED — see Clarifications log]` Should the wishlist icon show a count bubble like the cart? (Owned by spec 002; the placement here assumes no bubble, matching the mockups.)
 
 ## Clarifications log
 | Question | Answer | Date |
 |---|---|---|
+| Fonts, colours, heights, spacing (B1–B3) | Editable defaults close to the mockup (theme settings / colour schemes); merchant fine-tunes. | 2026-11-19 |
+| Account icon colour | Permanent brand accent, colour is a theme setting (not a logged-in indicator). | 2026-11-19 |
+| Sticky header (A18) | Sticky, reappears on scroll-up (Horizon option). Announcement bar is not sticky. | 2026-11-19 |
+| Dropdown / mega menu (A18) | Only when the merchant adds child links; uses Horizon's existing dropdown/mega menu. | 2026-11-19 |
+| Hover / active styles | Horizon defaults (underline/opacity), adjustable through settings where available. | 2026-11-19 |
+| Announcement bar (A19) | Rotates every 5 s; pauses on hover and focus; arrows for manual control. Messages and links are merchant content. | 2026-11-19 |
+| Footer accordions (A17) | Open/closed is a per-group setting; home shows all groups open, other templates closed. Links stay in the HTML. | 2026-11-19 |
+| Footer links, social networks | Merchant content (menus and social settings, all Horizon-supported networks). | 2026-11-19 |
+| Copyright year | Updates automatically ({{ 'now' | date: '%Y' }}). | 2026-11-19 |
+| Floating cart (A10) | Turned on per template; shown on Shop by Video by default; on other templates mobile only when enabled; no bubble when empty; opens the cart drawer. | 2026-11-19 |
+| Back to top (A11) | Global setting, on by default, sitewide, appears after ~1 viewport of scroll. | 2026-11-19 |
+| Wishlist count (A2) | No count bubble; header wishlist icon is a hidden-by-default link (A1). | 2026-11-19 |

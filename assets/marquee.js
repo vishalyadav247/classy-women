@@ -1,5 +1,5 @@
 import { Component } from '@theme/component';
-import { debounce } from '@theme/utilities';
+import { debounce, prefersReducedMotion } from '@theme/utilities';
 
 const ANIMATION_OPTIONS = {
   duration: 500,
@@ -24,6 +24,9 @@ class MarqueeComponent extends Component {
     const { marqueeItems } = this.refs;
     if (marqueeItems.length === 0) return;
 
+    // Under reduced motion the row is static and scrollable (see marquee.liquid), so it must not contain duplicates.
+    if (prefersReducedMotion()) return;
+
     const { numberOfCopies } = await this.#queryNumberOfCopies();
 
     const speed = this.#calculateSpeed(numberOfCopies);
@@ -36,6 +39,8 @@ class MarqueeComponent extends Component {
     window.addEventListener('resize', this.#handleResize);
     this.addEventListener('pointerenter', this.#slowDown);
     this.addEventListener('pointerleave', this.#speedUp);
+    this.addEventListener('focusin', this.#handleFocusIn);
+    this.addEventListener('focusout', this.#handleFocusOut);
   }
 
   disconnectedCallback() {
@@ -43,7 +48,27 @@ class MarqueeComponent extends Component {
     window.removeEventListener('resize', this.#handleResize);
     this.removeEventListener('pointerenter', this.#slowDown);
     this.removeEventListener('pointerleave', this.#speedUp);
+    this.removeEventListener('focusin', this.#handleFocusIn);
+    this.removeEventListener('focusout', this.#handleFocusOut);
   }
+
+  /**
+   * Pause the motion while keyboard focus is inside the marquee (e.g. on a linked logo).
+   */
+  #handleFocusIn = () => {
+    this.#slowDown();
+  };
+
+  /**
+   * Resume the motion once focus leaves the marquee entirely.
+   * @param {FocusEvent} event
+   */
+  #handleFocusOut = (event) => {
+    const { relatedTarget } = event;
+    if (relatedTarget instanceof Node && this.contains(relatedTarget)) return;
+
+    this.#speedUp();
+  };
 
   /**
    * @type {{ cancel: () => void, current: number } | null}
@@ -189,6 +214,8 @@ class MarqueeComponent extends Component {
     const clone = /** @type {HTMLElement} */ (this.refs.content.cloneNode(true));
 
     clone.setAttribute('aria-hidden', 'true');
+    // The clone is decorative; keep its links (e.g. linked logos) out of the tab order.
+    clone.setAttribute('inert', '');
     clone.removeAttribute('ref');
 
     this.refs.wrapper.appendChild(clone);

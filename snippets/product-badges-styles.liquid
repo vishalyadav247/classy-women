@@ -48,4 +48,18 @@
     padding-block: var(--badge-rectangle-padding-block);
     padding-inline: var(--badge-rectangle-padding-inline);
   }
+
+  /* The product-badge snippet always outputs its wrapper; hide it when no rule applies */
+  .product-badges:empty {
+    display: none;
+  }
+
+  /* Text-only card badge: no fill, theme-setting size and colour */
+  .product-badges--text .product-badges__badge {
+    background: none;
+    padding-inline: 0;
+    color: var(--badge-card-color, var(--color-foreground));
+    font-size: var(--badge-card-font-size, var(--font-size--xs));
+    letter-spacing: var(--letter-spacing--body-loose);
+  }
 {% endstylesheet %}

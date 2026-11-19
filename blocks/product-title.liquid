@@ -7,13 +7,29 @@
 {% else %}
   {% assign product_title = '<p role="heading" aria-level="3">' | append: closest.product.title | append: '</p>' %}
   <a
-    class="contents user-select-text"
+    class="contents user-select-text{% if block.settings.single_line %} product-title--single-line{% endif %}"
     ref="productTitleLink"
     href="{{ closest.product.url }}"
   >
     {% render 'text', fallback_text: product_title, block: block %}
   </a>
 {% endif %}
+
+{% stylesheet %}
+  /* Opt-in: keep the product title on one line and truncate it with an ellipsis. */
+  .product-title--single-line > .text-block {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .product-title--single-line > .text-block > * {
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+{% endstylesheet %}
 
 {% schema %}
 {
@@ -70,6 +86,12 @@
       "label": "t:settings.alignment",
       "default": "left",
       "visible_if": "{{ block.settings.width == '100%' }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "single_line",
+      "label": "t:settings.truncate_single_line",
+      "default": false
     },
     {
       "type": "header",

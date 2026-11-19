@@ -102,6 +102,7 @@ if (!customElements.get('product-card-link')) {
  * @property {import('quick-add').QuickAddComponent} [quickAdd] - The quick add component.
  * @property {HTMLElement} [cardGallery] - The card gallery component.
  * @property {HTMLImageElement[]} [imagesToTransition] - The images to transition.
+ * @property {HTMLElement} [cardIndicator] - The image position line (spec 002). Only rendered when the gallery shows it.
  * @extends {ProductCardLink<ProductCardRefs>}
  */
 export class ProductCard extends ProductCardLink {
@@ -213,6 +214,9 @@ export class ProductCard extends ProductCardLink {
 
   disconnectedCallback() {
     super.disconnectedCallback();
+    this.removeEventListener(StandardEvents.productSelect, this.#handleProductSelect);
+    this.removeEventListener(SlideshowSelectEvent.eventName, this.#handleSlideshowSelect);
+    mediaQueryLarge.removeEventListener('change', this.#handleQuickAdd);
     this.removeEventListener('click', this.navigateToProduct);
   }
 
@@ -259,6 +263,7 @@ export class ProductCard extends ProductCardLink {
 
         // Update price, availability, and URL based on new variant
         this.updatePrice(html);
+        this.#updateBadge(html);
         this.#isUnavailableVariantSelected(html);
         this.#updateProductUrl(html, typeof variantId === 'string' ? variantId : undefined);
         this.refs.quickAdd?.fetchProductPage(this.productPageUrl);
@@ -269,6 +274,9 @@ export class ProductCard extends ProductCardLink {
 
         this.#updateVariantImages();
         this.#previousSlideIndex = null;
+
+        // The variant image swap can change how many slides are visible, so recount the position line.
+        this.#updateIndicator(this.refs.slideshow?.current ?? 0);
 
         // Remove attribute after re-rendering since a variant selection has been made
         this.removeAttribute('data-no-swatch-selected');
@@ -308,11 +316,34 @@ export class ProductCard extends ProductCardLink {
    * @param {Document} html - The parsed HTML document with updated variant data.
    */
   updatePrice(html) {
-    const priceContainer = this.querySelectorAll(`product-price [ref='priceContainer']`)[1];
+    // Spec 002: a card renders a single price block, so the original `[1]` index never matched and the
+    // price was not updated after a swatch click. Cards rendered with the card price context
+    // (`.price--card`, same as the Section Rendering response) target their own container. Other
+    // markup keeps the original lookup unchanged. A card without `.price--card` (e.g. a card for the product
+    // whose page is being viewed) falls back to its only price container before the original `[1]` lookup.
+    const priceContainers = this.querySelectorAll(`product-price [ref='priceContainer']`);
+    const priceContainer =
+      this.querySelector(`product-price [ref='priceContainer'].price--card`) ??
+      (priceContainers.length === 1 ? priceContainers[0] : priceContainers[1]);
     const newPriceElement = html.querySelector(`product-price [ref='priceContainer']`);
 
     if (newPriceElement && priceContainer) {
       morph(priceContainer, newPriceElement);
+    }
+  }
+
+  /**
+   * Updates the status badge (snippet `product-badge`) for the newly selected variant.
+   * The `[data-product-badge]` wrapper is always rendered when the gallery shows badges, so a card
+   * without it (badges off, other card layouts) is left untouched.
+   * @param {Document} html - The parsed HTML document with updated variant data.
+   */
+  #updateBadge(html) {
+    const badge = this.querySelector('[data-product-badge]');
+    const newBadge = html.querySelector('[data-product-badge]');
+
+    if (badge && newBadge) {
+      morph(badge, newBadge);
     }
   }
 
@@ -457,7 +488,31 @@ export class ProductCard extends ProductCardLink {
     if (event.detail.userInitiated) {
       this.#previousSlideIndex = event.detail.index;
     }
+
+    // Only the card's own image carousel drives the position line, not a parent or sibling slideshow.
+    if (event.target === this.refs.slideshow) {
+      this.#updateIndicator(event.detail.index);
+    }
   };
+
+  /**
+   * Syncs the image position line with the card's carousel: the segment count follows the slides that
+   * can currently be reached (variant images are hidden or revealed on swatch changes), and the
+   * segment position follows the active slide. Motion is handled in CSS (reduced motion disables it).
+   * @param {number} index - The index of the active slide among the visible slides.
+   */
+  #updateIndicator(index) {
+    const { cardIndicator, slideshow } = this.refs;
+    if (!cardIndicator || !slideshow) return;
+
+    const count = slideshow.slides?.length ?? 0;
+    cardIndicator.hidden = count <= 1;
+    if (count <= 1) return;
+
+    const activeIndex = Math.min(Math.max(index, 0), count - 1);
+    cardIndicator.style.setProperty('--indicator-count', `${count}`);
+    cardIndicator.style.setProperty('--indicator-index', `${activeIndex}`);
+  }
 
   /**
    * Previews a variant.

@@ -11,7 +11,21 @@ import { CollectionUpdateEvent, SearchUpdateEvent, StandardEvents } from '@shopi
 const SEARCH_QUERY = 'q';
 
 /**
+ * Event dispatched by `<theme-drawer>` when it closes (see DrawerCloseEvent in theme-drawer.js).
+ * Kept as a string so this module does not import the drawer module.
+ * @type {string}
+ */
+const DRAWER_CLOSE_EVENT = 'theme-drawer:close';
+
+/**
  * Handles the main facets form functionality
+ *
+ * Opt-in `apply-mode="button"` attribute: changes to filter inputs inside the
+ * form are held as pending (no re-render) until `applyAndClose()` runs, e.g.
+ * from the drawer's Apply button. Closing the surrounding `<theme-drawer>`
+ * with pending changes resets the inputs to the applied state. Chips, Clear
+ * all, per-group clear and sorting always apply at once. Without the attribute
+ * every change applies immediately (default).
  *
  * @typedef {Object} FacetsFormRefs
  * @property {HTMLFormElement} facetsForm - The main facets form element
@@ -22,8 +36,25 @@ const SEARCH_QUERY = 'q';
 class FacetsFormComponent extends Component {
   requiredRefs = ['facetsForm'];
 
+  /** Whether filter inputs changed since the last apply (Apply-button mode only). */
+  #pending = false;
+
+  /** @type {Element | null} The drawer whose close event resets pending changes. */
+  #drawer = null;
+
+  /**
+   * @returns {boolean} Whether filter input changes wait for an explicit Apply.
+   */
+  get deferApply() {
+    return this.getAttribute('apply-mode') === 'button';
+  }
+
   connectedCallback() {
     super.connectedCallback();
+    if (this.deferApply) {
+      this.#drawer = this.closest('theme-drawer');
+      this.#drawer?.addEventListener(DRAWER_CLOSE_EVENT, this.#onDrawerClose);
+    }
     // In vertical filter mode the in-page filters take over at ≥750px, so a
     // drawer left open across a mobile→desktop resize would render duplicate
     // filter UI. `data-filter-style` is only set on the drawer variant (see
@@ -36,7 +67,48 @@ class FacetsFormComponent extends Component {
   disconnectedCallback() {
     super.disconnectedCallback();
     mediaQueryLarge.removeEventListener('change', this.#onBreakpointChange);
+    this.#drawer?.removeEventListener(DRAWER_CLOSE_EVENT, this.#onDrawerClose);
+    this.#drawer = null;
   }
+
+  /**
+   * Marks the form as having unapplied changes (Apply-button mode).
+   */
+  markPending() {
+    this.#pending = true;
+  }
+
+  /**
+   * Applies pending changes (if any) and closes the surrounding drawer.
+   * Bound to the drawer's Apply button in Apply-button mode.
+   */
+  applyAndClose() {
+    if (this.#pending) this.updateFilters();
+
+    const drawer = this.#drawer ?? this.closest('theme-drawer') ?? document.getElementById('filters-drawer');
+    if (drawer && 'close' in drawer && typeof drawer.close === 'function') {
+      drawer.close();
+    }
+  }
+
+  /**
+   * Discards unapplied changes when the drawer closes without Apply: the inputs
+   * return to the server-rendered (applied) state and the group summaries re-sync.
+   * @param {Event} event - The drawer close event
+   */
+  #onDrawerClose = (event) => {
+    if (event.target !== this.#drawer) return;
+    if (!this.#pending) return;
+
+    this.#pending = false;
+    this.refs.facetsForm.reset();
+
+    for (const element of this.querySelectorAll('facet-inputs-component, price-facet-component')) {
+      if (element instanceof FacetInputsComponent || element instanceof PriceFacetComponent) {
+        element.syncSummary();
+      }
+    }
+  };
 
   #onBreakpointChange = (/** @type {MediaQueryListEvent} */ event) => {
     if (!event.matches) return;
@@ -99,6 +171,7 @@ class FacetsFormComponent extends Component {
    * Updates filters and renders the section
    */
   updateFilters = () => {
+    this.#pending = false;
     this.#updateURLHash();
     const renderPromise = this.#updateSection();
     if (this.dataset.pageType === 'search') {
@@ -162,6 +235,7 @@ class FacetsFormComponent extends Component {
    * @param {string} url - The URL to update filters with
    */
   updateFiltersByURL(url) {
+    this.#pending = false;
     history.pushState('', '', url);
     const renderPromise = this.#updateSection();
     if (this.dataset.pageType === 'search') {
@@ -233,7 +307,18 @@ class FacetInputsComponent extends Component {
 
     if (!(facetsForm instanceof FacetsFormComponent)) return;
 
-    facetsForm.updateFilters();
+    if (facetsForm.deferApply) {
+      facetsForm.markPending();
+    } else {
+      facetsForm.updateFilters();
+    }
+    this.#updateSelectedFacetSummary();
+  }
+
+  /**
+   * Re-syncs the group summary with the current input state (e.g. after a form reset).
+   */
+  syncSummary() {
     this.#updateSelectedFacetSummary();
   }
 
@@ -409,7 +494,19 @@ class PriceFacetComponent extends Component {
     const facetsForm = this.closest('facets-form-component');
     if (!(facetsForm instanceof FacetsFormComponent)) return;
 
-    facetsForm.updateFilters();
+    if (facetsForm.deferApply) {
+      facetsForm.markPending();
+    } else {
+      facetsForm.updateFilters();
+    }
+    this.#setMinAndMaxValues();
+    this.#updateSummary();
+  }
+
+  /**
+   * Re-syncs the min/max bounds and the summary with the current input values (e.g. after a form reset).
+   */
+  syncSummary() {
     this.#setMinAndMaxValues();
     this.#updateSummary();
   }

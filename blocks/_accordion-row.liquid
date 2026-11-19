@@ -1,41 +1,61 @@
 
-{% assign block_settings = block.settings %}
-
-{% capture accordion_row_children %}
-  <details
-    class="details"
-    data-testid="accordion-details"
-    {% if block_settings.open_by_default %}
-      open
-    {% endif %}
-    {{ block.shopify_attributes }}
-  >
-    <summary class="details__header">
-      {% render 'icon-or-image',
-        icon: block_settings.icon,
-        image_upload: block_settings.image_upload,
-        width: block_settings.width,
-        class_name: 'details__icon'
-      %}
-      {{ block_settings.heading }}
-      <span class="svg-wrapper icon-caret icon-animated">
-        {{- 'icon-caret.svg' | inline_asset_content -}}
-      </span>
-      <span class="svg-wrapper icon-plus">
-        {{- 'icon-plus.svg' | inline_asset_content -}}
-      </span>
-    </summary>
-
-    <div class="details-content">
-      {% content_for 'blocks' %}
-    </div>
-  </details>
-{% endcapture %}
-{% render 'accordion-custom-component',
-  children: accordion_row_children,
-  open_by_default_on_desktop: block_settings.open_by_default,
-  open_by_default_on_mobile: block_settings.open_by_default
+{% liquid
+  assign block_settings = block.settings
+  assign open_desktop = block_settings.open_by_default
+  if block_settings.open_on_home_page and template.name == 'index'
+    assign open_desktop = true
+  endif
+  assign hide_row = false
 %}
+
+{% capture row_content %}{% content_for 'blocks' %}{% endcapture %}
+
+{% liquid
+  if block_settings.hide_when_empty and request.design_mode == false
+    assign row_content_stripped = row_content | strip
+    if row_content_stripped == blank
+      assign hide_row = true
+    endif
+  endif
+%}
+
+{% unless hide_row %}
+  {% capture accordion_row_children %}
+    <details
+      class="details"
+      data-testid="accordion-details"
+      {% if open_desktop %}
+        open
+      {% endif %}
+      {{ block.shopify_attributes }}
+    >
+      <summary class="details__header">
+        {% render 'icon-or-image',
+          icon: block_settings.icon,
+          image_upload: block_settings.image_upload,
+          width: block_settings.width,
+          class_name: 'details__icon'
+        %}
+        {{ block_settings.heading }}
+        <span class="svg-wrapper icon-caret icon-animated">
+          {{- 'icon-caret.svg' | inline_asset_content -}}
+        </span>
+        <span class="svg-wrapper icon-plus">
+          {{- 'icon-plus.svg' | inline_asset_content -}}
+        </span>
+      </summary>
+
+      <div class="details-content">
+        {{ row_content }}
+      </div>
+    </details>
+  {% endcapture %}
+  {% render 'accordion-custom-component',
+    children: accordion_row_children,
+    open_by_default_on_desktop: open_desktop,
+    open_by_default_on_mobile: block_settings.open_by_default
+  %}
+{% endunless %}
 
 {% schema %}
 {
@@ -60,6 +80,21 @@
       "type": "checkbox",
       "id": "open_by_default",
       "label": "t:settings.open_row_by_default",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "open_on_home_page",
+      "label": "t:settings.open_on_home_page",
+      "info": "t:info.open_on_home_page",
+      "default": false,
+      "visible_if": "{{ block.settings.open_by_default == false }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "hide_when_empty",
+      "label": "t:settings.hide_when_empty",
+      "info": "t:info.accordion_row_hide_when_empty",
       "default": false
     },
     {

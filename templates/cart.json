@@ -161,7 +161,17 @@
               "type": "_product-card-gallery",
               "name": "t:names.product_card_media",
               "settings": {
-                "image_ratio": "adapt",
+                "image_ratio": "tall",
+                "image_fit": "contain",
+                "media_background_color": "#EDEDED",
+                "show_badges": true,
+                "neutral_placeholder": true,
+                "swipe_in_carousels": true,
+                "show_indicator": true,
+                "indicator_thickness": 2,
+                "indicator_color": "#000000",
+                "indicator_track_color": "#E0E0E0",
+                "indicator_gap": 8,
                 "border": "none",
                 "border_width": 1,
                 "border_opacity": 100,
@@ -173,6 +183,25 @@
               },
               "blocks": {}
             },
+            "swatches_card": {
+              "type": "swatches",
+              "name": "t:names.swatches",
+              "settings": {
+                "product_swatches_alignment": "flex-start",
+                "product_swatches_alignment_mobile": "flex-start",
+                "swatch_style": "photos",
+                "thumbnail_size": 30,
+                "thumbnail_radius": 0,
+                "thumbnail_gap": 6,
+                "hide_single_value": true,
+                "hide_padding": false,
+                "product_swatches_padding_top": 8,
+                "product_swatches_padding_bottom": 0,
+                "product_swatches_padding_left": 0,
+                "product_swatches_padding_right": 0
+              },
+              "blocks": {}
+            },
             "product_title_WNMpHe": {
               "type": "product-title",
               "name": "t:names.product_title",
@@ -180,6 +209,7 @@
                 "width": "100%",
                 "max_width": "normal",
                 "alignment": "left",
+                "single_line": true,
                 "type_preset": "rte",
                 "font": "var(--font-body--family)",
                 "line_height": "normal",
@@ -221,6 +251,7 @@
           },
           "block_order": [
             "product_card_gallery_PEPpfq",
+            "swatches_card",
             "product_title_WNMpHe",
             "price_yXfkPX"
           ]

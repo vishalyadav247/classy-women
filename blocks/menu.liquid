@@ -5,12 +5,29 @@
   assign menu = block_settings.menu
   assign heading = block_settings.heading
   assign show_as_accordion = block_settings.show_as_accordion
+  assign hide_heading = false
+  if block_settings.show_heading == false and show_as_accordion == false
+    assign hide_heading = true
+  endif
+  assign heading_empty = hide_heading
+  if heading == blank and menu.title == blank
+    assign heading_empty = true
+  endif
   if show_as_accordion == true and block_settings.accordion_dividers == true
     assign dividers_enabled = true
   endif
+  assign should_render = false
+  if menu != blank or heading != blank
+    assign should_render = true
+  endif
+  if block_settings.hide_when_empty
+    if menu == blank or menu.links.size == 0
+      assign should_render = false
+    endif
+  endif
 %}
 
-{% if menu != blank or heading != blank %}
+{% if should_render %}
   {% render 'contrast-override',
     background_color: block_settings.background_color,
     text_color: block_settings.text_color,
@@ -23,6 +40,9 @@
     endif
     if dividers_enabled == true
       assign menu_class = menu_class | append: ' menu--dividers'
+    endif
+    if block_settings.columns > 1
+      assign menu_class = menu_class | append: ' menu--columns'
     endif
     assign should_disable_on_mobile = false
     assign should_open_by_default_on_mobile = false
@@ -41,6 +61,10 @@
       data-testid="menu-details"
       style="
         --spacing--size: {{ block_settings.menu_spacing }}px;
+        {% if block_settings.columns > 1 %}
+          --menu-columns: {{ block_settings.columns }};
+          --menu-columns-mobile: {{ block_settings.columns_mobile }};
+        {% endif %}
         {% render 'spacing-style', settings: block_settings %}
       "
       {% if show_as_accordion == false %}
@@ -48,7 +72,7 @@
       {% endif %}
       {{ block.shopify_attributes }}
     >
-      <summary class="menu__heading{% if heading == blank and menu.title == blank %} menu__heading--empty{% endif %} {{ block_settings.heading_preset }}">
+      <summary class="menu__heading{% if heading_empty %} menu__heading--empty{% endif %} {{ block_settings.heading_preset }}">
         <span class="menu__heading__default">{{ heading | default: menu.title }}</span>
         <span class="menu__heading__accordion">
           {{ heading | default: menu.title }}
@@ -66,8 +90,8 @@
 
       <nav
         class="details-content"
-        {% if heading == blank %}
-          aria-label="{{ menu.title | escape }}"
+        {% if heading == blank or hide_heading %}
+          aria-label="{{ heading | default: menu.title | escape }}"
         {% endif %}
       >
         {% if menu %}
@@ -109,6 +133,29 @@
 
   .menu .menu__heading--empty {
     display: none;
+  }
+
+  .menu--columns .details-content > ul {
+    display: grid;
+    grid-template-columns: repeat(var(--menu-columns-mobile, 1), minmax(0, 1fr));
+    column-gap: var(--gap-xl);
+    row-gap: var(--spacing--size);
+  }
+
+  .menu--columns .menu__item + .menu__item {
+    margin-block-start: 0;
+  }
+
+  @media screen and (min-width: 750px) {
+    .menu--columns .details-content > ul {
+      grid-template-columns: repeat(var(--menu-columns, 1), minmax(0, 1fr));
+    }
+  }
+
+  @media screen and (max-width: 359px) {
+    .menu--columns .details-content > ul {
+      grid-template-columns: minmax(0, 1fr);
+    }
   }
 
   .menu__heading__default {
@@ -168,6 +215,13 @@
       "label": "t:settings.heading"
     },
     {
+      "type": "checkbox",
+      "id": "show_heading",
+      "label": "t:settings.show_heading",
+      "default": true,
+      "visible_if": "{{ block.settings.show_as_accordion == false }}"
+    },
+    {
       "type": "header",
       "content": "t:content.appearance"
     },
@@ -180,6 +234,32 @@
       "step": 1,
       "unit": "px",
       "default": 12
+    },
+    {
+      "type": "range",
+      "id": "columns",
+      "label": "t:settings.columns",
+      "min": 1,
+      "max": 6,
+      "step": 1,
+      "default": 1
+    },
+    {
+      "type": "range",
+      "id": "columns_mobile",
+      "label": "t:settings.mobile_columns",
+      "min": 1,
+      "max": 2,
+      "step": 1,
+      "default": 1,
+      "visible_if": "{{ block.settings.columns > 1 }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "hide_when_empty",
+      "label": "t:settings.hide_when_empty",
+      "info": "t:info.menu_hide_when_empty",
+      "default": false
     },
     {
       "type": "checkbox",

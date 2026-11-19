@@ -93,6 +93,9 @@ class SlideshowViewportObserver {
  * @property {HTMLButtonElement} [previous]
  * @property {HTMLButtonElement} [next]
  *
+ * @attr {boolean} [allow-nested] Opt-in: when nested inside another slideshow, stay enabled on large screens
+ *   (sets `mobile-disabled`) instead of being fully disabled.
+ *
  * @extends {Component<Refs>}
  */
 export class Slideshow extends Component {
@@ -160,6 +163,8 @@ export class Slideshow extends Component {
       this.removeEventListener('mouseenter', this.suspend);
       this.removeEventListener('mouseleave', this.resume);
       this.removeEventListener('pointerenter', this.#handlePointerEnter);
+      this.removeEventListener('focusin', this.#handleFocusIn);
+      this.removeEventListener('focusout', this.#handleFocusOut);
       document.removeEventListener('visibilitychange', this.#handleVisibilityChange);
     }
 
@@ -176,6 +181,15 @@ export class Slideshow extends Component {
   /** Indicates whether the slideshow is nested inside another slideshow. */
   get isNested() {
     return this.parentElement?.closest('slideshow-component') !== null;
+  }
+
+  /**
+   * Whether a nested slideshow may stay enabled (opt-in through the `allow-nested` attribute).
+   * When set, a nested slideshow is only disabled below the large breakpoint (via `mobile-disabled`).
+   * @returns {boolean}
+   */
+  get allowNested() {
+    return this.hasAttribute('allow-nested');
   }
 
   get initialSlide() {
@@ -349,10 +363,13 @@ export class Slideshow extends Component {
   play(interval = this.autoplayInterval) {
     if (this.#interval) return;
 
+    // Never auto-advance when the user prefers reduced motion. Manual navigation still works.
+    if (prefersReducedMotion()) return;
+
     this.paused = false;
 
     this.#interval = setInterval(() => {
-      if (this.matches(':hover') || document.hidden) return;
+      if (this.matches(':hover') || this.matches(':focus-within') || document.hidden) return;
 
       this.next();
     }, interval);
@@ -562,11 +579,19 @@ export class Slideshow extends Component {
     this.addEventListener('mouseenter', this.suspend);
     this.addEventListener('mouseleave', this.resume);
     this.addEventListener('pointerenter', this.#handlePointerEnter);
+    this.addEventListener('focusin', this.#handleFocusIn);
+    this.addEventListener('focusout', this.#handleFocusOut);
     document.addEventListener('visibilitychange', this.#handleVisibilityChange);
 
     this.#updateControlsVisibility();
 
-    this.disabled = this.isNested || this.disabled;
+    if (this.isNested && this.allowNested) {
+      // Opt-in: nested slideshows (e.g. card galleries inside a carousel) stay usable on large screens.
+      // Below the large breakpoint, `mobile-disabled` hands swipes to the outer slideshow.
+      this.setAttribute('mobile-disabled', '');
+    } else {
+      this.disabled = this.isNested || this.disabled;
+    }
 
     this.resume();
 
@@ -839,6 +864,25 @@ export class Slideshow extends Component {
 
   #handlePointerEnter = () => {
     this.setAttribute('actioned', '');
+  };
+
+  /**
+   * Suspends autoplay while keyboard focus is inside the slideshow.
+   */
+  #handleFocusIn = () => {
+    this.suspend();
+  };
+
+  /**
+   * Resumes autoplay once focus leaves the slideshow, unless the pointer is still over it.
+   * @param {FocusEvent} event
+   */
+  #handleFocusOut = (event) => {
+    const { relatedTarget } = event;
+    if (relatedTarget instanceof Node && this.contains(relatedTarget)) return;
+    if (this.matches(':hover')) return;
+
+    this.resume();
   };
 
   get slides() {

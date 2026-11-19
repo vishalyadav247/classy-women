@@ -347,6 +347,32 @@
       endfor
     %}
 
+    /* Typography roles: section headings and tile captions */
+    {% liquid
+      assign section_heading_font = settings.type_font_section_heading | default: 'heading'
+      assign section_heading_size = settings.type_size_section_heading | default: 16 | divided_by: 16.0
+      assign section_heading_spacing = settings.type_letter_spacing_section_heading | default: 'heading-loose'
+      assign section_heading_case = settings.type_case_section_heading | default: 'uppercase'
+      assign tile_caption_font = settings.type_font_tile_caption | default: 'body'
+      assign tile_caption_size = settings.type_size_tile_caption | default: 13 | divided_by: 16.0
+      assign tile_caption_spacing = settings.type_letter_spacing_tile_caption | default: 'heading-loose'
+      assign tile_caption_case = settings.type_case_tile_caption | default: 'uppercase'
+    %}
+    --font-section-heading--family: var(--font-{{ section_heading_font }}--family);
+    --font-section-heading--style: var(--font-{{ section_heading_font }}--style);
+    --font-section-heading--weight: var(--font-{{ section_heading_font }}--weight);
+    --font-section-heading--size: {{ section_heading_size }}rem;
+    --font-section-heading--letter-spacing: var(--letter-spacing--{{ section_heading_spacing }});
+    --font-section-heading--case: {{ section_heading_case }};
+    --font-section-heading--line-height: var(--line-height--display-normal);
+    --font-tile-caption--family: var(--font-{{ tile_caption_font }}--family);
+    --font-tile-caption--style: var(--font-{{ tile_caption_font }}--style);
+    --font-tile-caption--weight: var(--font-{{ tile_caption_font }}--weight);
+    --font-tile-caption--size: {{ tile_caption_size }}rem;
+    --font-tile-caption--letter-spacing: var(--letter-spacing--{{ tile_caption_spacing }});
+    --font-tile-caption--case: {{ tile_caption_case }};
+    --font-tile-caption--line-height: var(--line-height--body-normal);
+
     /* Hardcoded font sizes */
     --font-size--3xs: 0.625rem;
     --font-size--2xs: 0.75rem;
@@ -526,6 +552,18 @@
       --badge-rectangle-padding-block: 4px;
       --badge-rectangle-padding-inline: 10px;
     }
+    /* Card badges (text style). The colour is only output when set, so consumers fall back to
+       var(--color-foreground) of the card's own colour scheme: var(--badge-card-color, var(--color-foreground)). */
+    --badge-card-font-size: {{ settings.badge_card_font_size | default: 12 }}px;
+    {%- if settings.badge_card_text_color != blank %}
+      --badge-card-color: {{ settings.badge_card_text_color }};
+    {%- endif %}
+
+    /* Card prices. Compare-at colour is only output when set (blank = subdued foreground, unchanged). */
+    --color-price-sale: {{ settings.card_sale_color | default: '#D0021B' }};
+    {%- if settings.card_compare_at_color != blank %}
+      --color-price-compare-at: {{ settings.card_compare_at_color }};
+    {%- endif %}
 
     /* Icons */
     --icon-size-2xs: 0.6rem;

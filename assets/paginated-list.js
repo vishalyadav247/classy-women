@@ -13,6 +13,8 @@ import { getScrollTop, scrollTo } from '@theme/scroll-container';
  * @property {HTMLSpanElement} [viewMorePrevious] - The view more previous button.
  * @property {HTMLSpanElement} [viewMoreNext] - The view more next button.
  * @property {HTMLElement[]} [cards] - The cards elements.
+ * @property {HTMLButtonElement} [loadMoreButton] - The "Load more" button (only rendered when the load trigger is a button).
+ * @property {HTMLElement} [loadMoreStatus] - Visually hidden live region announcing that more items were loaded.
  *
  * @extends Component<Refs>
  */
@@ -33,6 +35,9 @@ export default class PaginatedList extends Component {
 
   /** @type {PaginatedListAspectRatioHelper} */
   #aspectRatioHelper;
+
+  /** @type {boolean} */
+  #isLoadingMore = false;
 
   connectedCallback() {
     super.connectedCallback();
@@ -144,8 +149,12 @@ export default class PaginatedList extends Component {
       return;
     }
 
-    await this.#fetchSpecificPage(page.page, page.url);
-    resolvePromise();
+    try {
+      await this.#fetchSpecificPage(page.page, page.url);
+    } finally {
+      // A failed fetch must not leave a waiting render (or the Load more button) stuck
+      resolvePromise();
+    }
   }
 
   /**
@@ -167,6 +176,61 @@ export default class PaginatedList extends Component {
     this.pages.set(pageNumber, pageContent);
   }
 
+  /**
+   * Appends the next page of items when the "Load more" button is clicked.
+   * Bound in Liquid with `on:click="/loadMore"`.
+   */
+  async loadMore() {
+    const { loadMoreButton, loadMoreStatus } = this.refs;
+
+    if (!loadMoreButton || this.#isLoadingMore) return;
+
+    const hadKeyboardFocus = document.activeElement === loadMoreButton && loadMoreButton.matches(':focus-visible');
+
+    this.#isLoadingMore = true;
+    loadMoreButton.setAttribute('aria-busy', 'true');
+    loadMoreButton.disabled = true;
+    loadMoreButton.classList.add('is-loading');
+
+    /** @type {Element[] | undefined} */
+    let newItems;
+
+    try {
+      newItems = await this.#renderNextPage();
+    } finally {
+      this.#isLoadingMore = false;
+      loadMoreButton.removeAttribute('aria-busy');
+      loadMoreButton.disabled = false;
+      loadMoreButton.classList.remove('is-loading');
+    }
+
+    // Hide the button once there is no next page left. After a failed fetch nothing was appended and the
+    // next page is still valid, so the button stays visible and enabled for a retry.
+    if (!this.#shouldUsePage(this.#getPage('next'))) {
+      loadMoreButton.hidden = true;
+    }
+
+    if (!newItems?.length) {
+      // Disabling the button drops its focus; give it back when nothing was appended
+      if (hadKeyboardFocus && !loadMoreButton.hidden) loadMoreButton.focus();
+      return;
+    }
+
+    if (loadMoreStatus) {
+      loadMoreStatus.textContent = loadMoreButton.dataset.loadedText ?? '';
+    }
+
+    if (hadKeyboardFocus) {
+      const focusTarget = /** @type {HTMLElement | null} */ (newItems[0]?.querySelector('a[href]') ?? null);
+      focusTarget?.focus({ preventScroll: false });
+    }
+  }
+
+  /**
+   * Appends the next page of items to the grid.
+   *
+   * @returns {Promise<Element[] | undefined>} The appended elements, or undefined when nothing was rendered.
+   */
   async #renderNextPage() {
     const { grid } = this.refs;
 
@@ -190,7 +254,9 @@ export default class PaginatedList extends Component {
       if (!nextPageItemElements) return;
     }
 
-    grid.append(...nextPageItemElements);
+    const appendedElements = Array.from(nextPageItemElements);
+
+    grid.append(...appendedElements);
 
     this.#aspectRatioHelper.processNewElements();
 
@@ -201,6 +267,8 @@ export default class PaginatedList extends Component {
     requestIdleCallback(() => {
       this.#fetchPage('next');
     });
+
+    return appendedElements;
   }
 
   async #renderPreviousPage() {

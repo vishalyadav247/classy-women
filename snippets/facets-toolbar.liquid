@@ -1,0 +1,305 @@
+{%- doc -%}
+  Renders the toolbar of the "Drawer" filter style (blocks/filters.liquid):
+  the product count (centred), "Sort by" and "Filter (n)" (right-aligned, each in
+  a cell with a divider), top and bottom rules, and the active filter chips row.
+  "Filter (n)" opens the `#filters-drawer` rendered by blocks/filters.liquid.
+  On mobile the count sits on its own centred line above a two-cell Sort | Filter bar.
+
+  When filtering is on, the sort options and chips belong to the drawer's form
+  (`FacetFiltersForm--<section>-overflow`), so sorting keeps the active filters.
+  When filtering is off, the toolbar wraps its own facets form (`-toolbar`).
+
+  @param {object} results - The collection or search results object
+  @param {object} filters - The storefront filters
+  @param {number} products_count - The number of products in the current (filtered) result
+  @param {number} total_active_values - The number of active filter values, shown as "Filter (n)"
+  @param {string} sort_by - The current sort value
+  @param {string} results_url - The results URL (used by Clear all)
+  @param {object} block_settings - The filters block settings
+  @param {string} section_id - The section ID
+  @param {string} block_id - The filters block ID (used for the custom colour class)
+  @param {string} [block_attributes] - The block's `shopify_attributes`
+  @param {boolean} [has_custom_color] - Whether the block sets a custom background or text colour
+  @param {string} [facets_margin_style] - The `--facets-margin` declaration computed by the filters block
+  @param {string} [form_attributes] - Data attributes for the toolbar's own facets form (collection ID, handle, page type, results count); used only when filtering is off
+
+  @example
+  {% render 'facets-toolbar',
+    results: results,
+    filters: filters,
+    products_count: products_count,
+    total_active_values: total_active_values,
+    sort_by: sort_by,
+    results_url: results_url,
+    block_settings: block.settings,
+    section_id: section.id,
+    block_id: block.id
+  %}
+{%- enddoc -%}
+
+{%- liquid
+  if block_settings.enable_filtering
+    assign sort_suffix = 'overflow'
+    assign form_id = 'FacetFiltersFormComponent--' | append: section_id | append: '-overflow'
+  else
+    assign sort_suffix = 'toolbar'
+    assign form_id = 'FacetFiltersFormComponent--' | append: section_id | append: '-toolbar'
+  endif
+
+  if total_active_values > 0
+    assign filter_label = 'actions.filter_with_count' | t: count: total_active_values
+  else
+    assign filter_label = 'actions.show_filters' | t
+  endif
+
+  assign sort_label = 'actions.sort_by' | t
+-%}
+
+{% capture toolbar_bar %}
+  <div class="facets-toolbar__bar">
+    {% if block_settings.show_product_count %}
+      <div
+        class="facets-toolbar__count"
+        data-testid="products-count"
+      >
+        <span role="status">
+          {% if products_count > 25000 %}
+            {{- 'content.item_count_cutoff' | t: count: 25000 -}}
+          {% else %}
+            {{- 'content.search_results_resource_products_count' | t: count: products_count -}}
+          {% endif %}
+        </span>
+      </div>
+    {% endif %}
+
+    <div class="facets-toolbar__controls">
+      {% if block_settings.enable_sorting %}
+        <div class="facets-toolbar__cell facets-toolbar__cell--sort">
+          {% render 'sorting',
+            results: results,
+            sort_by: sort_by,
+            filter_style: 'horizontal',
+            suffix: sort_suffix,
+            sort_position: 'desktop',
+            should_use_select_on_mobile: false,
+            section_id: section_id,
+            label: sort_label
+          %}
+        </div>
+      {% endif %}
+
+      {% if block_settings.enable_filtering %}
+        <div class="facets-toolbar__cell facets-toolbar__cell--filter">
+          <button
+            type="button"
+            class="button-unstyled facets-toolbar__filter-button"
+            on:click="#filters-drawer/open"
+            aria-haspopup="dialog"
+            aria-controls="filters-drawer"
+          >
+            {{- filter_label -}}
+          </button>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+{% endcapture %}
+
+<div
+  class="
+    facets-block-wrapper
+    facets-block-wrapper--drawer
+    {%- if block_settings.filter_width == 'full-width' %} facets-block-wrapper--full-width{% endif %}
+    {%- if has_custom_color %} color-custom-{{ block_id }}{% endif %}
+  "
+  style="--grid-column--desktop: var(--{{ block_settings.filter_width }}); {{ facets_margin_style }}"
+  {{ block_attributes }}
+>
+  <div
+    class="facets-toolbar spacing-style"
+    style="{% render 'spacing-style', settings: block_settings %}{% if block_settings.text_label_case == 'uppercase' %} --facet-label-transform: uppercase;{% endif %}"
+    aria-label="{{ 'accessibility.filters' | t }}"
+    role="region"
+  >
+    {% if block_settings.enable_filtering == false and block_settings.enable_sorting %}
+      <facets-form-component
+        class="facets-toolbar__form"
+        section-id="{{ section_id }}"
+        id="{{ form_id }}"
+        {{ form_attributes }}
+      >
+        <form
+          action="{{ results_url }}"
+          id="FacetFiltersForm--{{ section_id }}-toolbar"
+          ref="facetsForm"
+        >
+          {{ toolbar_bar }}
+        </form>
+      </facets-form-component>
+    {% else %}
+      {{ toolbar_bar }}
+    {% endif %}
+
+    {% if block_settings.enable_filtering %}
+      <div class="facets-toolbar__chips">
+        {% render 'filter-remove-buttons',
+          filters: filters,
+          results_url: results_url,
+          show_filter_label: block_settings.show_filter_label,
+          should_show_clear_all: true,
+          form_id: form_id,
+          clear_all_min: 2
+        %}
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+{% stylesheet %}
+  .facets-toolbar {
+    --facets-upper-z-index: var(--layer-raised);
+    --facets-panel-min-width: 120px;
+    --facets-toolbar-divider: var(--style-border-width) solid rgb(var(--color-foreground-rgb) / var(--opacity-10-25));
+
+    color: var(--color-foreground);
+  }
+
+  .facets-toolbar__bar {
+    display: flex;
+    flex-direction: column;
+
+    @media screen and (min-width: 750px) {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: stretch;
+      border-block: var(--facets-toolbar-divider);
+    }
+  }
+
+  .facets-toolbar__count {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-block: var(--padding-sm);
+    font-size: var(--font-size--sm);
+    text-transform: var(--facet-label-transform);
+
+    @media screen and (min-width: 750px) {
+      grid-column: 2;
+      padding-block: 0;
+      white-space: nowrap;
+    }
+  }
+
+  .facets-toolbar__controls {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
+    border-block: var(--facets-toolbar-divider);
+
+    @media screen and (min-width: 750px) {
+      grid-column: 3;
+      display: flex;
+      justify-content: flex-end;
+      border-block: none;
+    }
+  }
+
+  .facets-toolbar__cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: var(--minimum-touch-target);
+
+    @media screen and (min-width: 750px) {
+      padding-inline: var(--padding-xl);
+      border-inline-start: var(--facets-toolbar-divider);
+    }
+  }
+
+  .facets-toolbar__cell + .facets-toolbar__cell {
+    border-inline-start: var(--facets-toolbar-divider);
+  }
+
+  .facets-toolbar__cell:last-child {
+    @media screen and (min-width: 750px) {
+      padding-inline-end: 0;
+    }
+  }
+
+  .facets-toolbar__filter-button {
+    min-height: var(--minimum-touch-target);
+    width: 100%;
+    justify-content: center;
+    color: var(--color-foreground);
+    text-transform: var(--facet-label-transform);
+    text-decoration-line: underline;
+    text-decoration-color: transparent;
+    text-decoration-thickness: 0.075em;
+    text-underline-offset: 0.125em;
+    transition: text-decoration-color var(--animation-speed) var(--animation-easing);
+
+    &:hover {
+      text-decoration-color: currentcolor;
+    }
+  }
+
+  /* Sorting dropdown inside the toolbar */
+  .facets-toolbar .sorting-filter .facets__panel {
+    position: relative;
+    padding: 0;
+  }
+
+  .facets-toolbar .sorting-filter::before {
+    content: none;
+  }
+
+  .facets-toolbar .sorting-filter .facets__summary {
+    align-items: center;
+    gap: var(--gap-2xs);
+    min-height: var(--minimum-touch-target);
+    font-size: var(--font-paragraph--size);
+  }
+
+  .facets-toolbar .sorting-filter .facets__status {
+    display: none;
+  }
+
+  .facets-toolbar .sorting-filter__options {
+    inset-inline-end: 0;
+
+    @media screen and (max-width: 749px) {
+      inset-inline: 0 auto;
+    }
+  }
+
+  /* Active filter chips: outlined pills with the "×" before the label */
+  .facets-toolbar .facets-remove {
+    @media screen and (min-width: 750px) {
+      padding-inline: 0;
+    }
+  }
+
+  .facets-toolbar .facets-remove:has(facet-remove-component) {
+    margin-block: var(--margin-sm) 0;
+  }
+
+  .facets-toolbar .facets-remove__pill {
+    --pills-pill-background-color: transparent;
+
+    gap: var(--gap-2xs);
+    border: var(--style-border-width) solid rgb(var(--color-foreground-rgb) / var(--opacity-20));
+
+    &:hover {
+      --pills-pill-background-color: rgb(var(--color-foreground-rgb) / var(--opacity-5-15));
+    }
+  }
+
+  .facets-toolbar .facets-remove__pill .svg-wrapper {
+    order: -1;
+  }
+
+  .facets-toolbar .facets__clear-all-link {
+    display: block;
+  }
+{% endstylesheet %}

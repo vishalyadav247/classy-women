@@ -1,0 +1,195 @@
+{% comment %}
+  Floating cart button
+
+  A fixed, circular cart button at the right edge of the viewport. Added per template by the merchant.
+  Shown on mobile, and also on desktop (vertically centred) when "Show on desktop" is on.
+  Reuses `cart-icon` and `cart-bubble`, so the count stays in sync with the header without extra JS,
+  and opens the cart drawer through the existing `#cart-drawer/toggle` declarative call.
+  Renders nothing on the cart page.
+
+  Shares `--floating-button-*` custom properties with `snippets/back-to-top.liquid` so the two never overlap.
+  The variables are declared in both files (identical values) so either works on its own.
+{% endcomment %}
+
+{%- unless template.name == 'cart' -%}
+  {%- assign bubble_id = 'floating-cart-bubble-' | append: section.id -%}
+
+  <script
+    type="module"
+    src="{{ 'cart-icon.js' | asset_url }}"
+    fetchpriority="low"
+  ></script>
+
+  {% capture floating_cart_icon %}
+    <cart-icon class="floating-cart__icon">
+      <span
+        class="svg-wrapper"
+        aria-hidden="true"
+      >
+        {{- 'icon-cart.svg' | inline_asset_content -}}
+      </span>
+      {% render 'cart-bubble', limit: 100, id: bubble_id %}
+    </cart-icon>
+  {% endcapture %}
+
+  <div class="floating-cart{% if section.settings.show_on_desktop %} floating-cart--desktop{% endif %}">
+    {%- if settings.cart_type == 'drawer' -%}
+      <button
+        type="button"
+        class="floating-cart__button button-unstyled"
+        on:click="#cart-drawer/toggle"
+        aria-haspopup="dialog"
+        aria-controls="cart-drawer"
+        aria-label="{{ 'accessibility.cart' | t }}"
+        aria-describedby="{{ bubble_id }}"
+      >
+        {{ floating_cart_icon }}
+      </button>
+    {%- else -%}
+      <a
+        href="{{ routes.cart_url }}"
+        class="floating-cart__button"
+        aria-label="{{ 'accessibility.cart' | t }}"
+        aria-describedby="{{ bubble_id }}"
+      >
+        {{ floating_cart_icon }}
+      </a>
+    {%- endif -%}
+  </div>
+{%- endunless -%}
+
+{% stylesheet %}
+  /* The section wrapper holds only a fixed overlay, so it must not take the "last section grows" space. */
+  .content-for-layout > .floating-cart-section:last-child {
+    flex-grow: 0;
+  }
+
+  /* Hand the "last section grows" space to the real section just before it. */
+  .content-for-layout > .shopify-section:has(+ .floating-cart-section:last-child) {
+    flex-grow: 1;
+  }
+
+  /*
+    Shared floating-button variables. Duplicated from snippets/back-to-top.liquid (identical values)
+    so this section works when the back-to-top button is turned off. Keep the two in sync.
+  */
+  :root {
+    --floating-button-size: 48px;
+    --floating-button-inset: 16px;
+    --floating-button-gap: 12px;
+    --floating-sticky-offset: 88px;
+  }
+
+  @media screen and (min-width: 750px) {
+    :root {
+      --floating-button-size: 56px;
+      --floating-button-inset: 24px;
+      --floating-sticky-offset: 96px;
+    }
+  }
+
+  /* Lift bottom-anchored floating buttons above the stuck sticky add-to-cart bar. */
+  body:has(.sticky-add-to-cart__bar[data-stuck='true']) {
+    --floating-sticky-offset-current: var(--floating-sticky-offset);
+  }
+
+  .floating-cart {
+    position: fixed;
+    z-index: var(--layer-heightened);
+    inset-inline-end: var(--floating-button-inset, 16px);
+    inset-block-end: calc(var(--floating-button-inset, 16px) + var(--floating-sticky-offset-current, 0px));
+  }
+
+  .floating-cart__button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--floating-button-size, 48px);
+    height: var(--floating-button-size, 48px);
+    padding: 0;
+    border-radius: 50%;
+    border: var(--border-width-sm, 1px) solid var(--border-color);
+    background: var(--color-background);
+    color: var(--color-foreground);
+    cursor: pointer;
+  }
+
+  .floating-cart__button:hover {
+    border-color: var(--color-border);
+  }
+
+  .floating-cart__icon {
+    --cart-bubble-size: 20px;
+
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .floating-cart__icon .svg-wrapper,
+  .floating-cart__icon .svg-wrapper svg {
+    width: var(--icon-size-md);
+    height: var(--icon-size-md);
+  }
+
+  .floating-cart__icon .cart-bubble {
+    position: absolute;
+    width: var(--cart-bubble-size);
+    top: calc(var(--cart-bubble-size) / -2);
+    inset-inline-end: calc(var(--cart-bubble-size) / -2);
+  }
+
+  .floating-cart__icon:has(.cart-bubble__text-count:empty) {
+    --cart-bubble-size: 10px;
+  }
+
+  .floating-cart__icon .cart-bubble__text {
+    font-family: var(--font-paragraph--family);
+    font-weight: var(--font-paragraph--weight);
+  }
+
+  @media screen and (min-width: 750px) {
+    .floating-cart:not(.floating-cart--desktop) {
+      display: none;
+    }
+
+    .floating-cart__button {
+      width: var(--floating-button-size, 56px);
+      height: var(--floating-button-size, 56px);
+    }
+
+    .floating-cart--desktop {
+      inset-block: 50% auto;
+      transform: translateY(-50%);
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:names.floating_cart",
+  "tag": "div",
+  "class": "floating-cart-section",
+  "enabled_on": {
+    "templates": ["*"]
+  },
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "t:info.floating_cart"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_on_desktop",
+      "label": "t:settings.show_on_desktop",
+      "default": false
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:names.floating_cart"
+    }
+  ]
+}
+{% endschema %}

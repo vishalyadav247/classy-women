@@ -83,6 +83,48 @@
     }
   }
 
+  /* Opt-in: [side='start'] anchors the drawer to the inline-start edge (left in LTR) */
+  theme-drawer[side='start'] .theme-drawer__dialog {
+    inset-inline-end: auto;
+    inset-inline-start: calc(-1 * var(--theme-drawer-width, var(--sidebar-width)));
+    padding-inline: var(--safe-area-inset-left) 0;
+    border-inline-start: none;
+    border-inline-end: var(--style-border-drawer);
+  }
+
+  theme-drawer[side='start'] .theme-drawer__dialog[open] {
+    inset-inline-start: 0;
+  }
+
+  [dir='rtl'] theme-drawer[side='start'] .theme-drawer__dialog {
+    padding-inline: var(--safe-area-inset-right) 0;
+  }
+
+  theme-drawer[side='start'] .theme-drawer__dialog--opening,
+  theme-drawer[side='start'] .theme-drawer__dialog--opening-inline-start {
+    animation-name: drawer-slide-in-start;
+  }
+
+  theme-drawer[side='start'] .theme-drawer__dialog--closing {
+    animation-name: drawer-slide-out-start;
+  }
+
+  theme-drawer[side='start'] .theme-drawer__dialog-instant {
+    animation: none;
+  }
+
+  @keyframes drawer-slide-in-start {
+    from {
+      inset-inline-start: calc(-1 * var(--theme-drawer-width, var(--sidebar-width)));
+    }
+  }
+
+  @keyframes drawer-slide-out-start {
+    to {
+      inset-inline-start: calc(-1 * var(--theme-drawer-width, var(--sidebar-width)));
+    }
+  }
+
   .theme-drawer__dialog::backdrop {
     background: rgb(var(--backdrop-color-rgb) / var(--backdrop-opacity));
   }

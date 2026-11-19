@@ -13,8 +13,15 @@
   elsif section.settings.layout_type == 'grid'
     assign max_items = section.settings.columns
   endif
+
+  # Optional: render nothing on the storefront when no collections are selected (the editor keeps placeholders).
+  assign hide_section = false
+  if section.settings.hide_when_empty and section.settings.collection_list == blank and request.design_mode == false
+    assign hide_section = true
+  endif
 %}
 
+{% unless hide_section %}
 {% liquid
   if section.settings.background_color != blank
     render 'contrast-override', background_color: section.settings.background_color, section_id: section.id
@@ -31,6 +38,7 @@
     section--{{ section.settings.section_width }}
     {% if section.settings.background_color != blank %}color-custom-{{ section.id }}{% endif %}
     section-resource-list
+    {% if section.settings.image_hover_zoom %}section-resource-list--hover-zoom{% endif %}
     spacing-style
     gap-style
   "
@@ -78,6 +86,19 @@
     test_id: 'collections-list-grid'
   %}
 </div>
+{% endunless %}
+
+{% stylesheet %}
+  @media (prefers-reduced-motion: no-preference) {
+    .section-resource-list--hover-zoom .collection-card__image .resource-image__image {
+      transition: transform var(--animation-speed-slow) var(--ease-out-cubic);
+    }
+
+    .section-resource-list--hover-zoom .collection-card:is(:hover, :focus-within) .collection-card__image .resource-image__image {
+      transform: scale(1.04);
+    }
+  }
+{% endstylesheet %}
 
 {% schema %}
 {
@@ -123,6 +144,13 @@
       "type": "collection_list",
       "id": "collection_list",
       "label": "t:settings.collection_list"
+    },
+    {
+      "type": "checkbox",
+      "id": "hide_when_empty",
+      "label": "t:settings.hide_when_empty",
+      "info": "t:info.collection_list_hide_when_empty",
+      "default": false
     },
     {
       "type": "header",
@@ -245,6 +273,19 @@
       "step": 1,
       "default": 4,
       "visible_if": "{{ section.settings.layout_type == 'editorial' }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "desktop_peek",
+      "label": "t:settings.desktop_peek",
+      "default": true,
+      "visible_if": "{{ section.settings.layout_type == 'carousel' }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "image_hover_zoom",
+      "label": "t:settings.image_hover_zoom",
+      "default": false
     },
     {
       "type": "header",

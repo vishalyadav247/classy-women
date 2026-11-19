@@ -7,11 +7,25 @@
   @param {string} [title] - Header of the collection or search results
   @param {string} children - List or grid of product cards
   @param {boolean} [enable_infinite_scroll] - Whether to enable infinite scroll (default: true)
+  @param {boolean} [has_promos] - Whether `children` contains promo tiles. Adds `product-grid--has-promos` (dense grid flow) (default: false)
+  @param {boolean} [load_more_button] - Replace automatic loading on scroll with a "Load more" button. Only used when infinite scroll is enabled (default: false)
+
+  The grid uses fixed desktop columns when `section.settings.grid_columns` exists and is not `auto` (Grid layout only).
 {%- enddoc -%}
 
 {%- liquid
   if section.settings.background_color != blank
     render 'contrast-override', background_color: section.settings.background_color, section_id: section.id
+  endif
+
+  assign fixed_columns = false
+  if section.settings.layout_type == 'grid' and section.settings.grid_columns != blank and section.settings.grid_columns != 'auto'
+    assign fixed_columns = section.settings.grid_columns
+  endif
+
+  assign card_size_rule = section.settings.product_card_size
+  if fixed_columns
+    assign card_size_rule = 'fixed'
   endif
 -%}
 
@@ -25,7 +39,7 @@
     {% case section.settings.layout_type %}
       {% when 'grid' %}
         .product-grid--{{ section.id }}:is(.product-grid--grid) {
-          --product-grid-columns-desktop: repeat(auto-fill, minmax({{ product_card_size }}, 1fr));
+          --product-grid-columns-desktop: {% if fixed_columns %}repeat({{ fixed_columns }}, minmax(0, 1fr)){% else %}repeat(auto-fill, minmax({{ product_card_size }}, 1fr)){% endif %};
         }
 
 
@@ -53,7 +67,7 @@
     {% endcase %}
 
     /* This logic helps prevent displaying one column for an large or extra-large product card size on a small screen. We want it to display at least two columns. */
-    {% case section.settings.product_card_size %}
+    {% case card_size_rule %}
       {% when 'extra-large' or 'large' %}
         @container product-grid (max-width: calc({{ product_card_size }} * 3 + {{ section.settings.columns_gap_horizontal }}px * 2)) {
           .product-grid--{{ section.id }}:is(.product-grid--grid) {
@@ -124,7 +138,7 @@
         <h4 class="main-collection-grid__title">{{ title }}</h4>
       {% endif %}
       <ul
-        class="product-grid product-grid--{{ section.id }} product-grid--{{ section.settings.layout_type }} {% if section.settings.mobile_product_card_size == 'large' %} product-grid-mobile--large{% endif %}"
+        class="product-grid product-grid--{{ section.id }} product-grid--{{ section.settings.layout_type }} {% if section.settings.mobile_product_card_size == 'large' %} product-grid-mobile--large{% endif %}{% if has_promos %} product-grid--has-promos{% endif %}"
         data-testid="product-grid"
         product-grid-view="default"
         ref="grid"
@@ -166,7 +180,30 @@
         {{ children }}
       </ul>
       {% if enable_infinite_scroll != false %}
-        <span ref="viewMoreNext"></span>
+        {% if load_more_button -%}
+          {%- if paginate.next %}
+            <div class="product-grid__load-more">
+              <button
+                type="button"
+                class="button button-secondary product-grid__load-more-button"
+                ref="loadMoreButton"
+                on:click="/loadMore"
+                data-loaded-text="{{ 'content.products_loaded' | t | escape }}"
+              >
+                <span class="product-grid__load-more-label">{{ 'actions.load_more' | t }}</span>
+                <span
+                  class="product-grid__load-more-loading"
+                  aria-hidden="true"
+                ></span>
+              </button>
+              <span
+                class="visually-hidden"
+                role="status"
+                ref="loadMoreStatus"
+              ></span>
+            </div>
+          {%- endif %}
+        {% else %}<span ref="viewMoreNext"></span>{% endif %}
       {% else %}
         {% render 'pagination-controls', paginate: paginate %}
       {% endif %}
@@ -215,6 +252,72 @@
 
   .product-grid :is(h3, p) {
     margin: 0;
+  }
+
+  /* Promo tiles: later products backfill the cells left beside a tile */
+  .product-grid--has-promos {
+    grid-auto-flow: row dense;
+  }
+
+  /* Load more button */
+  .product-grid__load-more {
+    display: flex;
+    justify-content: center;
+    padding-block-start: var(--padding-3xl);
+  }
+
+  /* At the end the button is hidden but the status region stays in the DOM; drop the spacing it needed */
+  .product-grid__load-more:has(> .product-grid__load-more-button[hidden]) {
+    padding-block-start: 0;
+  }
+
+  .product-grid__load-more-button {
+    display: inline-grid;
+    grid-template-areas: 'stack';
+    place-items: center;
+    min-height: 44px;
+    min-width: 11rem;
+  }
+
+  .product-grid__load-more-button > * {
+    grid-area: stack;
+  }
+
+  .product-grid__load-more-loading {
+    width: 1.25em;
+    height: 1.25em;
+    border: 2px solid currentcolor;
+    border-inline-end-color: transparent;
+    border-radius: 50%;
+    visibility: hidden;
+  }
+
+  /* Beats `.button:disabled` (0.5 opacity) while the button is disabled during loading */
+  .product-grid__load-more .product-grid__load-more-button.is-loading:disabled,
+  .product-grid__load-more-button.is-loading {
+    opacity: 1;
+    cursor: progress;
+  }
+
+  .product-grid__load-more-button.is-loading .product-grid__load-more-label {
+    visibility: hidden;
+  }
+
+  .product-grid__load-more-button.is-loading .product-grid__load-more-loading {
+    visibility: visible;
+    animation: product-grid-load-more-spin 0.8s linear infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .product-grid__load-more-button.is-loading .product-grid__load-more-loading {
+      animation-duration: 2.4s;
+    }
+  }
+
+  @keyframes product-grid-load-more-spin {
+    to {
+      transform: rotate(360deg);
+    }
   }
 
   .product-grid__item {

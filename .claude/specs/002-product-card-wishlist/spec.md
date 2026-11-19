@@ -1,6 +1,6 @@
 # Spec 002: Product card and wishlist
 
-- **Status:** Draft
+- **Status:** Done (2026-11-19)
 - **Mockup(s):**
   - `.claude/design/home.png`: product cards in "Most-loved styles" and "New arrivals"; wishlist heart icon in the header.
   - `.claude/design/collection.png`: product cards in the 4-column grid, including on-sale, "ONLY FEW LEFT" and "SOLD OUT" states.
@@ -8,7 +8,7 @@
 - **Template(s) affected:** `index`, `collection`, `product`, every template through the header (wishlist icon), and a new wishlist page template (`[ASSUMPTION]`, see S5).
 - **Design-map rows:** G4 (product card), G5 (wishlist).
 
-> The mockups are full-page desktop screenshots shown downscaled. Exact pixel sizes, fonts, colours and small copy can't be read reliably. Any value not stated here is marked `[NEEDS CLARIFICATION]`.
+> The mockups are full-page desktop screenshots shown downscaled. Exact pixel sizes, fonts, colours and small copy can't be read reliably. Any value not stated here is marked `[RESOLVED — see Clarifications log]`.
 
 ## Goal
 Shoppers see the same consistent product card wherever products are listed: home carousels, the collection grid and the product-page carousels. The card shows a status badge, colour options as small product thumbnails, the price, and the saving when the product is on sale, so they can compare products at a glance. Shoppers can also save products to a wishlist from any card or from the product page, see how many items they have saved from the header, and come back to that list later, including as guests. This lets them shortlist products without adding them to the cart.
@@ -44,9 +44,9 @@ Shoppers see the same consistent product card wherever products are listed: home
     - NEW and BESTSELLER: source to be confirmed.
   - The wishlist state for this product (saved or not saved).
 - **Layout (desktop):**
-  - The product image sits centred on a flat, light-grey background `[NEEDS CLARIFICATION: exact hex]`. Product shots appear as cut-outs with no visible border or radius on the media box `[NEEDS CLARIFICATION: confirm 0 radius]`.
-  - The media box is portrait. It measures about 4:5 in the collection grid and home carousels `[NEEDS CLARIFICATION: exact ratio; it reads as roughly 4:5 to 3:4]`. All cards in a row share the same ratio.
-  - The badge sits in the top-left corner, inset from the edges. It is small uppercase text with no visible pill or background fill `[NEEDS CLARIFICATION: font, size, letter-spacing, colour; whether there is any background]`.
+  - The product image sits centred on a flat, light-grey background `[RESOLVED — see Clarifications log: exact hex]`. Product shots appear as cut-outs with no visible border or radius on the media box `[RESOLVED — see Clarifications log: confirm 0 radius]`.
+  - The media box is portrait. It measures about 4:5 in the collection grid and home carousels `[RESOLVED — see Clarifications log: exact ratio; it reads as roughly 4:5 to 3:4]`. All cards in a row share the same ratio.
+  - The badge sits in the top-left corner, inset from the edges. It is small uppercase text with no visible pill or background fill `[RESOLVED — see Clarifications log: font, size, letter-spacing, colour; whether there is any background]`.
     - Exception: the product-page gallery badge (P1) appears as white text on a black fill. Confirm whether cards should ever use that style.
   - The wishlist heart sits in the top-right corner, inset by the same amount as the badge. It is an outline heart icon with no background circle.
   - Badge and heart are vertically aligned on the same top line.
@@ -58,14 +58,14 @@ Shoppers see the same consistent product card wherever products are listed: home
   - **Hover (desktop):**
     - The whole card links to the product page.
     - `[ASSUMPTION]` On hover the image changes to the product's second image, if one exists. Horizon's standard behaviour stays in place.
-    - `[NEEDS CLARIFICATION]` Confirm whether hovering should show the second image or swipe through all images (see S2).
+    - `[RESOLVED — see Clarifications log]` Confirm whether hovering should show the second image or swipe through all images (see S2).
   - **Heart:** see S5. Clicking the heart never navigates to the product page.
   - **Sold out:**
     - The badge reads SOLD OUT.
-    - The image is not dimmed or greyed in the mockup `[NEEDS CLARIFICATION: confirm no dimming]`.
+    - The image is not dimmed or greyed in the mockup `[RESOLVED — see Clarifications log: confirm no dimming]`.
     - The heart is still shown and still works.
   - **No badge:** if no badge rule applies, the top-left corner is empty. The mockup shows this on the collection grid's second card.
-  - **More than one rule applies:** only one badge is shown, chosen by a fixed priority. `[ASSUMPTION]` The priority is SOLD OUT > ONLY FEW LEFT > NEW > BESTSELLER `[NEEDS CLARIFICATION: confirm order]`.
+  - **More than one rule applies:** only one badge is shown, chosen by a fixed priority. `[ASSUMPTION]` The priority is SOLD OUT > ONLY FEW LEFT > NEW > BESTSELLER `[RESOLVED — see Clarifications log: confirm order]`.
   - **No image:** the grey media box keeps its aspect ratio and shows a neutral placeholder. Badge and heart still render.
 - **Acceptance criteria:**
   - [ ] AC1.1 Every product card on home, collection and product templates shows the product image centred on a flat background colour that the merchant can set in the theme editor.
@@ -86,14 +86,14 @@ Shoppers see the same consistent product card wherever products are listed: home
 - **Data-driven content:** The number of images, and which image is showing `[ASSUMPTION]`.
 - **Layout (desktop):**
   - A thin horizontal track in a light tone, with a short dark segment at the left end. The segment is about one-fifth to one-quarter of the track's width in the mockup.
-  - `[NEEDS CLARIFICATION: thickness, colours, gap to the image]`
+  - `[RESOLVED — see Clarifications log: thickness, colours, gap to the image]`
 - **Layout (mobile):** `[ASSUMPTION]` Same as desktop. It acts as the position indicator when the shopper swipes through card images.
 - **Interactions & states:**
-  - `[NEEDS CLARIFICATION]` What does this line represent? There are two readings:
+  - `[RESOLVED — see Clarifications log]` What does this line represent? There are two readings:
     - **(a)** An image-position indicator for an in-card image carousel. The dark segment is 1/N of the width and moves as images change.
     - **(b)** A purely decorative divider.
   - `[ASSUMPTION]` Reading (a).
-  - With one image, the line is hidden, or the segment fills the whole track `[NEEDS CLARIFICATION]`.
+  - With one image, the line is hidden, or the segment fills the whole track `[RESOLVED — see Clarifications log]`.
 - **Acceptance criteria:**
   - [ ] AC2.1 A thin indicator line appears under the media box on every card, unless the merchant turns it off.
   - [ ] AC2.2 (Depends on the answer about reading (a).) For a product with N images, the dark segment is 1/N of the track width. It moves to the matching position when the shopper changes the image on that card, on hover/arrow on desktop or by swiping on mobile.
@@ -105,14 +105,14 @@ Shoppers see the same consistent product card wherever products are listed: home
   - Show/hide swatches.
   - Maximum number of swatches shown before an overflow indicator.
     - The mockup shows up to 5 on a 4-column grid.
-    - `[NEEDS CLARIFICATION: max count and the overflow style, e.g. "+3"]`
+    - `[RESOLVED — see Clarifications log: max count and the overflow style, e.g. "+3"]`
 - **Data-driven content:**
   - One thumbnail per value of the product's colour option, showing that variant's image (a small product photo, not a flat colour chip).
   - The selected or default colour.
 - **Layout (desktop):**
   - A single row of small square thumbnails with small even gaps. Each thumbnail shows the product image on a light background.
   - The selected or current colour has a thin dark border. The others have a light or no border.
-  - `[NEEDS CLARIFICATION: thumbnail size (about 28–32 px at 1920 wide), border colour/width, gap]`
+  - `[RESOLVED — see Clarifications log: thumbnail size (about 28–32 px at 1920 wide), border colour/width, gap]`
 - **Layout (mobile):** `[ASSUMPTION]`
   - Thumbnails shrink slightly but stay at least 24 px.
   - If they don't fit on one line, the row shows as many as fit, followed by a "+N" overflow indicator. It does not wrap or scroll sideways.
@@ -122,10 +122,10 @@ Shoppers see the same consistent product card wherever products are listed: home
     - It updates the price and badge to match that variant, if they differ.
     - It updates the card link so it opens the product page with that variant pre-selected.
     - It does not navigate by itself.
-  - **Unavailable colour variant:** the thumbnail stays visible `[ASSUMPTION]`. It is shown with a strike-through or reduced opacity `[NEEDS CLARIFICATION: style]`.
+  - **Unavailable colour variant:** the thumbnail stays visible `[ASSUMPTION]`. It is shown with a strike-through or reduced opacity `[RESOLVED — see Clarifications log: style]`.
   - **No colour option, or only one colour:**
     - `[ASSUMPTION]` A single thumbnail is shown. The mockup shows single-thumbnail cards (for example "Caroline Crossbody Bag", "Nona Crossbody Bag").
-    - `[NEEDS CLARIFICATION]` For products with no colour option at all, is the row hidden or does it show one thumbnail?
+    - `[RESOLVED — see Clarifications log]` For products with no colour option at all, is the row hidden or does it show one thumbnail?
   - **Variant has no image:** fall back to the colour swatch defined for the option value, or to the product's featured image.
 - **Acceptance criteria:**
   - [ ] AC3.1 For a product with a colour option, the card shows one thumbnail per colour value, using that variant's image.
@@ -148,21 +148,21 @@ Shoppers see the same consistent product card wherever products are listed: home
   - Compare-at price.
   - Discount percentage, calculated from the price and compare-at price.
 - **Layout (desktop):**
-  - **Line 1:** product title, in sentence/title case, regular weight, dark text, single line `[NEEDS CLARIFICATION: truncate with ellipsis, or allow 2 lines]`.
+  - **Line 1:** product title, in sentence/title case, regular weight, dark text, single line `[RESOLVED — see Clarifications log: truncate with ellipsis, or allow 2 lines]`.
   - **Line 2, all inline on one baseline:**
     1. The current price in dark text, slightly bolder than the title (e.g. "₹3,239.00").
     2. The compare-at price, struck through in grey (e.g. "₹3,999.00").
     3. The discount label in red uppercase (e.g. "19% OFF").
   - Card prices show the currency symbol with two decimal places.
-  - `[NEEDS CLARIFICATION: font family/size/weight, red hex]`
+  - `[RESOLVED — see Clarifications log: font family/size/weight, red hex]`
 - **Layout (mobile):** `[ASSUMPTION]` Same order. If line 2 doesn't fit, the discount label wraps onto its own line, and the price and compare-at price stay together.
 - **Interactions & states:**
   - **On sale** (the compare-at price is higher than the price): show the price, the struck compare-at price and "NN% OFF".
   - **Not on sale:** show the price only, with no strike-through and no label. Examples are the cards under "New arrivals".
-  - **Variants priced differently:** show the price of the default or selected variant `[NEEDS CLARIFICATION: or "From ₹x" when variant prices differ]`.
+  - **Variants priced differently:** show the price of the default or selected variant `[RESOLVED — see Clarifications log: or "From ₹x" when variant prices differ]`.
   - **Sold out:** the price and discount still show (as on the collection mockup's SOLD OUT cards).
   - **Discount percentage rounding:** the mockup values are consistent with rounding to the nearest whole number. For example, 3,239 / 3,999 gives 19%, and 1,999 / 3,999 gives 50%.
-    - `[NEEDS CLARIFICATION: round to the nearest whole number, or always round down so the saving is never overstated]`
+    - `[RESOLVED — see Clarifications log: round to the nearest whole number, or always round down so the saving is never overstated]`
   - **Title hover:** `[ASSUMPTION]` the title is underlined on hover. The whole card is a single link target.
 - **Acceptance criteria:**
   - [ ] AC4.1 The card shows the product title, then the price line. Both are left-aligned and sit below the swatches.
@@ -187,7 +187,7 @@ Shoppers see the same consistent product card wherever products are listed: home
   - Whether the header shows a count badge.
   - The text announced to screen readers and shown in confirmation messages, such as "Added to wishlist" and "Removed from wishlist".
 - **Data-driven content:**
-  - The shopper's saved products: product, and the variant if saved from the product page with a variant selected `[NEEDS CLARIFICATION: product-level or variant-level saving]`.
+  - The shopper's saved products: product, and the variant if saved from the product page with a variant selected `[RESOLVED — see Clarifications log: product-level or variant-level saving]`.
   - The number of saved items.
   - On the wishlist page, live product data for each saved item (title, image, price, compare-at price, availability), shown with the S1–S4 card.
 - **Layout (desktop):**
@@ -198,24 +198,24 @@ Shoppers see the same consistent product card wherever products are listed: home
   - **Header heart:**
     - An outline heart, the same size and line weight as the other header icons.
     - `[ASSUMPTION]` When the count is above 0, a small count bubble shows on the icon, in the same style as the cart count.
-    - The mockup shows no bubble, so `[NEEDS CLARIFICATION]` whether a count should be shown at all.
+    - The mockup shows no bubble, so `[RESOLVED — see Clarifications log]` whether a count should be shown at all.
   - **Wishlist page `[ASSUMPTION]`:**
     - Page heading, then a grid of the S1–S4 card in the same column count as the collection grid (4 columns on desktop).
     - Each card's heart is in the filled state. Clicking it removes the item.
 - **Layout (mobile):** `[ASSUMPTION]`
   - The card heart stays in the top-right corner of the media box.
-  - The product-page heart stays left of Add to cart. If Add to cart becomes sticky on mobile, the heart goes with it `[NEEDS CLARIFICATION]`.
-  - The header heart stays visible in the mobile header and is not moved into the menu drawer `[NEEDS CLARIFICATION: mobile header may lack room]`.
+  - The product-page heart stays left of Add to cart. If Add to cart becomes sticky on mobile, the heart goes with it `[RESOLVED — see Clarifications log]`.
+  - The header heart stays visible in the mobile header and is not moved into the menu drawer `[RESOLVED — see Clarifications log: mobile header may lack room]`.
   - The wishlist page uses a 2-column grid.
 - **Interactions & states:**
   - **Toggle:**
-    - Clicking or tapping an outline heart saves the product, and the heart becomes filled `[NEEDS CLARIFICATION: filled colour, black or brand accent]`.
+    - Clicking or tapping an outline heart saves the product, and the heart becomes filled `[RESOLVED — see Clarifications log: filled colour, black or brand accent]`.
     - Clicking a filled heart removes the product, and the heart returns to outline.
     - The change is immediate, with no page reload.
   - **Sync:** every heart for the same product on the page updates together, for example if the product appears in two carousels or on the product page and in "Recently viewed". The header count updates at the same moment.
   - **Feedback:** the change is announced to screen readers. `[ASSUMPTION]` There is no visible toast.
   - **Persistence for guests:** saved items persist in this browser on this device across sessions until removed `[ASSUMPTION]`. No login is required.
-  - **Persistence for logged-in customers:** `[NEEDS CLARIFICATION]`
+  - **Persistence for logged-in customers:** `[RESOLVED — see Clarifications log]`
     - Should the wishlist be stored against the customer account, so it follows them across devices?
     - Should a guest's list merge into the account list on login?
     - Is a third-party wishlist app planned instead?
@@ -223,9 +223,9 @@ Shoppers see the same consistent product card wherever products are listed: home
   - **Empty wishlist:** the page shows the merchant's empty-state message and button. The header count is hidden.
   - **Saved product later deleted or unpublished:** it is silently dropped from the list and the count.
   - **Saved product later sold out:** it stays in the list and shows the SOLD OUT badge.
-  - **Adding to cart from the wishlist page:** not in the mockups `[NEEDS CLARIFICATION: is a quick add-to-cart needed on wishlist cards, or does the card only link to the product page]`.
+  - **Adding to cart from the wishlist page:** not in the mockups `[RESOLVED — see Clarifications log: is a quick add-to-cart needed on wishlist cards, or does the card only link to the product page]`.
   - **Wishlist turned off:** no hearts render anywhere and the header icon is hidden.
-  - **Maximum items:** `[NEEDS CLARIFICATION: any limit]`.
+  - **Maximum items:** `[RESOLVED — see Clarifications log: any limit]`.
 - **Acceptance criteria:**
   - [ ] AC5.1 Every product card shows an outline heart in the top-right corner when the wishlist is on.
   - [ ] AC5.2 The product page shows a heart button directly left of Add to cart, matching its height.
@@ -243,33 +243,43 @@ Shoppers see the same consistent product card wherever products are listed: home
   - [ ] AC5.14 All wishlist UI text (button labels, announcements, page heading, empty state) can be edited or translated without changing code.
 
 ## Open questions
-- `[NEEDS CLARIFICATION]` **Badge source: BESTSELLER.** Product tag (e.g. `bestseller`), a product metafield, membership of a "Bestsellers" collection, or sales-based?
-- `[NEEDS CLARIFICATION]` **Badge source: NEW.** Product tag, metafield, membership of a "New arrivals" collection, or published within the last N days (what N)?
-- `[NEEDS CLARIFICATION]` **Badge source: ONLY FEW LEFT.** Inventory at or below a threshold (what number, and is it merchant-set)? Is it total inventory across variants, or per selected variant? Does it apply when inventory isn't tracked?
-- `[NEEDS CLARIFICATION]` **Badge source: SOLD OUT.** Confirm it means "no variant available for sale".
-- `[NEEDS CLARIFICATION]` **Badge priority** when several apply. Proposed: SOLD OUT > ONLY FEW LEFT > NEW > BESTSELLER.
-- `[NEEDS CLARIFICATION]` **Custom badges.** Should merchants be able to set a free-text custom badge per product (e.g. via a metafield) as well as the four types?
-- `[NEEDS CLARIFICATION]` **Badge styling.** The card badge appears to be plain small uppercase text, while the product-page gallery badge is white on black. Should they match? Exact font, size, letter-spacing and colours?
-- `[NEEDS CLARIFICATION]` **Card media.** Background hex, exact aspect ratio, corner radius (appears 0), and whether sold-out images are dimmed (appears not).
-- `[NEEDS CLARIFICATION]` **Indicator line.** Is the line under the image a position indicator for an in-card image carousel, or decorative? Behaviour with a single image? Thickness and colours?
-- `[NEEDS CLARIFICATION]` **Card image hover.** Second image on hover, or swiping through all images with arrows?
-- `[NEEDS CLARIFICATION]` **Swatch thumbnails.** Size, border style, gap, maximum shown, overflow style (+N), how unavailable colours look, and whether the row is hidden for products with no colour option.
-- `[NEEDS CLARIFICATION]` **Swatch interaction.** On hover or on click (desktop)? Should it update price and badge, or only the image?
-- `[NEEDS CLARIFICATION]` **Title.** Single-line truncation or two lines?
-- `[NEEDS CLARIFICATION]` **Typography and colours.** Font family, sizes and weights for title, price, compare-at price and discount. Hex for the sale red and the grey compare-at price.
-- `[NEEDS CLARIFICATION]` **Discount rounding.** Nearest whole number or always rounded down?
-- `[NEEDS CLARIFICATION]` **Price display.** Should products with different variant prices show "From ₹x" or the default variant's price?
-- `[NEEDS CLARIFICATION]` **Wishlist level.** Save the product or the specific variant?
-- `[NEEDS CLARIFICATION]` **Wishlist for logged-in customers.**
+- `[RESOLVED — see Clarifications log]` **Badge source: BESTSELLER.** Product tag (e.g. `bestseller`), a product metafield, membership of a "Bestsellers" collection, or sales-based?
+- `[RESOLVED — see Clarifications log]` **Badge source: NEW.** Product tag, metafield, membership of a "New arrivals" collection, or published within the last N days (what N)?
+- `[RESOLVED — see Clarifications log]` **Badge source: ONLY FEW LEFT.** Inventory at or below a threshold (what number, and is it merchant-set)? Is it total inventory across variants, or per selected variant? Does it apply when inventory isn't tracked?
+- `[RESOLVED — see Clarifications log]` **Badge source: SOLD OUT.** Confirm it means "no variant available for sale".
+- `[RESOLVED — see Clarifications log]` **Badge priority** when several apply. Proposed: SOLD OUT > ONLY FEW LEFT > NEW > BESTSELLER.
+- `[RESOLVED — see Clarifications log]` **Custom badges.** Should merchants be able to set a free-text custom badge per product (e.g. via a metafield) as well as the four types?
+- `[RESOLVED — see Clarifications log]` **Badge styling.** The card badge appears to be plain small uppercase text, while the product-page gallery badge is white on black. Should they match? Exact font, size, letter-spacing and colours?
+- `[RESOLVED — see Clarifications log]` **Card media.** Background hex, exact aspect ratio, corner radius (appears 0), and whether sold-out images are dimmed (appears not).
+- `[RESOLVED — see Clarifications log]` **Indicator line.** Is the line under the image a position indicator for an in-card image carousel, or decorative? Behaviour with a single image? Thickness and colours?
+- `[RESOLVED — see Clarifications log]` **Card image hover.** Second image on hover, or swiping through all images with arrows?
+- `[RESOLVED — see Clarifications log]` **Swatch thumbnails.** Size, border style, gap, maximum shown, overflow style (+N), how unavailable colours look, and whether the row is hidden for products with no colour option.
+- `[RESOLVED — see Clarifications log]` **Swatch interaction.** On hover or on click (desktop)? Should it update price and badge, or only the image?
+- `[RESOLVED — see Clarifications log]` **Title.** Single-line truncation or two lines?
+- `[RESOLVED — see Clarifications log]` **Typography and colours.** Font family, sizes and weights for title, price, compare-at price and discount. Hex for the sale red and the grey compare-at price.
+- `[RESOLVED — see Clarifications log]` **Discount rounding.** Nearest whole number or always rounded down?
+- `[RESOLVED — see Clarifications log]` **Price display.** Should products with different variant prices show "From ₹x" or the default variant's price?
+- `[RESOLVED — see Clarifications log]` **Wishlist level.** Save the product or the specific variant?
+- `[RESOLVED — see Clarifications log]` **Wishlist for logged-in customers.**
   - Should the list be stored on the customer account (cross-device)?
   - Should a guest list merge on login?
   - Or is a third-party wishlist app planned?
-- `[NEEDS CLARIFICATION]` **Wishlist page.** Not in the mockups. Confirm a dedicated page is wanted, plus its layout, heading copy and empty-state copy and link. Also confirm whether wishlist cards need quick add-to-cart or a remove button besides the heart.
-- `[NEEDS CLARIFICATION]` **Header wishlist count.** Show a count bubble (none is visible in the mockup)? Should the heart appear in the mobile header or move into the menu drawer?
-- `[NEEDS CLARIFICATION]` **Filled heart.** Colour (black, or a brand/sale accent), and whether a visible toast or confirmation is wanted on toggle.
-- `[NEEDS CLARIFICATION]` **Mobile sticky Add to cart.** Does the product-page heart go with it?
-- `[NEEDS CLARIFICATION]` **Wishlist limits.** Is there a maximum number of saved items?
+- `[RESOLVED — see Clarifications log]` **Wishlist page.** Not in the mockups. Confirm a dedicated page is wanted, plus its layout, heading copy and empty-state copy and link. Also confirm whether wishlist cards need quick add-to-cart or a remove button besides the heart.
+- `[RESOLVED — see Clarifications log]` **Header wishlist count.** Show a count bubble (none is visible in the mockup)? Should the heart appear in the mobile header or move into the menu drawer?
+- `[RESOLVED — see Clarifications log]` **Filled heart.** Colour (black, or a brand/sale accent), and whether a visible toast or confirmation is wanted on toggle.
+- `[RESOLVED — see Clarifications log]` **Mobile sticky Add to cart.** Does the product-page heart go with it?
+- `[RESOLVED — see Clarifications log]` **Wishlist limits.** Is there a maximum number of saved items?
 
 ## Clarifications log
 | Question | Answer | Date |
 |---|---|---|
+| Badge sources & priority (A3) | SOLD OUT automatic (no variant available). ONLY FEW LEFT automatic: total tracked stock ≤ theme-setting threshold (default 5). NEW / BESTSELLER from tags `badge:new` / `badge:bestseller`. Optional custom text from metafield `custom.badge`. Priority SOLD OUT > ONLY FEW LEFT > custom > NEW > BESTSELLER. PDP uses the same source. | 2026-11-19 |
+| Badge styling | Card: plain small uppercase text, no fill (as mockup); PDP gallery badge white on black. Font/size/colour are settings with mockup-like defaults. | 2026-11-19 |
+| Discount rounding (A4) | Nearest whole number, everywhere. | 2026-11-19 |
+| Card media | Light-grey bg default #EDEDED (setting), 0 radius, ratio default 3:4 (setting, B3), sold-out images not dimmed. | 2026-11-19 |
+| Card images + indicator line | In-card swipe carousel through product images; arrows on hover on desktop; the line under the image is a position indicator; hidden with 1 image. Thickness/colours are settings with mockup-like defaults. | 2026-11-19 |
+| Swatches | Show the colour variant's product photo as thumbnail (confirmed earlier). Hover previews the image; click selects the colour: image, price, % off and badge update and the card link targets that variant. | 2026-11-19 |
+| Swatch limit | Max 5 then "+N". Unavailable colours faded with a diagonal strike. Row hidden when the product has 0 or 1 colour. Thumbnail size/border/gap are settings with mockup-like defaults. | 2026-11-19 |
+| Title / price | Title: 1 line with ellipsis. Variants with different prices show "From ₹x". | 2026-11-19 |
+| Typography & colours (B1/B2) | Theme typography settings; sale red #D0021B, compare-at grey #8A8A8A as editable defaults. | 2026-11-19 |
+| Wishlist (S5, A1/A2) | Deferred to an app. Theme provides only an `@app` block slot on the card media (and PDP buy area in spec 006) plus the hidden header icon link from spec 001. No theme wishlist page, count, persistence or limits. All S5 wishlist ACs are out of scope for this build. | 2026-11-19 |

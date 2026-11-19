@@ -12,6 +12,7 @@
   @param {string} [localization] - Captured HTML for language/country selector
   @param {string} [search] - Captured HTML for search input
   @param {string} [drawer_search] - Captured HTML for drawer-based search
+  @param {string} [account] - Optional captured HTML for the account button. When set, it is placed right before search if search is on the right of the actions row, otherwise right before actions
 {% enddoc %}
 
 {%- liquid
@@ -22,6 +23,15 @@
 
   if first != blank
     assign left = 'first '
+  endif
+
+  assign account_slot = 'actions'
+  if account != blank
+    assign search_column = settings.search_position | default: 'left'
+    assign search_row = settings.search_row | default: 'top'
+    if search_column == 'right' and search_row == 'top'
+      assign account_slot = 'search'
+    endif
   endif
 
   for item in order
@@ -42,6 +52,9 @@
         when 'center'
           assign center = center | append: item | append: ' '
         else
+          if account != blank and item == account_slot
+            assign right = right | append: 'account '
+          endif
           assign right = right | append: item | append: ' '
       endcase
     endif
@@ -86,6 +99,8 @@
               {{ drawer_search }}
             {% when 'actions' %}
               {{ actions }}
+            {% when 'account' %}
+              {{ account }}
           {% endcase %}
         {% endunless %}
       {% endfor %}

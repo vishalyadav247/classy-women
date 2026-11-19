@@ -5,6 +5,17 @@
   @param {product} product_resource - The product to render
   @param {boolean} [show_unit_price] - Whether to show the unit price
   @param {boolean} [show_sale_price_first] - Whether to show the sale price first
+  @param {string} [context] - Pass 'card' on product cards to apply the theme's card price settings
+    (From price, compare-at visibility, discount label) and the `.price--card` layout. Omit for unchanged output.
+  @param {boolean} [show_discount] - Explicitly show (true) or hide (false) the "NN% OFF" discount label.
+    Overrides the card setting. Omit to use the card setting (card context) or hide it (other contexts).
+  @param {boolean} [variant_selected] - Pass true when a variant has been chosen (e.g. the swatch Section Rendering
+    response, which only sends `option_values=` so `selected_variant` can be nil). Skips the card "From" price
+    so the selected variant's price is shown. Omit for unchanged output.
+
+  Note: in card context (`context: 'card'`) the sale price is always rendered first, regardless of
+  `show_sale_price_first`, so the first render and the swatch response (sections/section-rendering-product-card.liquid)
+  always produce the same order.
 {%- enddoc -%}
 
 {% render 'price-styles' %}
@@ -12,6 +23,9 @@
 {%- liquid
   assign show_unit_price = show_unit_price | default: false
   assign show_sale_price_first = show_sale_price_first | default: false
+  if context == 'card' and product_resource != blank
+    assign show_sale_price_first = true
+  endif
   assign selected_variant = product_resource.selected_or_first_available_variant
   assign price = selected_variant.price
   assign compare_at_price = selected_variant.compare_at_price
@@ -50,9 +64,64 @@
     endif
   endif
 
+  # Card context (spec 002): From price, compare-at toggle, discount label
+  assign is_card = false
+  if context == 'card' and product_resource != blank
+    assign is_card = true
+  endif
+
+  assign show_compare_at_item = true
+  assign show_discount_label = false
+  assign show_from_price = false
+  if is_card
+    if settings.card_show_compare_at == false
+      assign show_compare_at_item = false
+    endif
+    if settings.card_show_discount_label
+      assign show_discount_label = true
+    endif
+    if settings.card_show_from_price and product_resource.price_varies and product_resource.selected_variant == blank and variant_selected != true and has_volume_pricing != true
+      assign show_from_price = true
+    endif
+  endif
+  if show_discount == true
+    assign show_discount_label = true
+  elsif show_discount == false
+    assign show_discount_label = false
+  endif
+
+  if show_from_price
+    # Compare-at and discount come from the lowest-priced variant
+    assign price = product_resource.price_min
+    assign compare_at_price = null
+    for variant in product_resource.variants
+      if variant.price == price
+        assign compare_at_price = variant.compare_at_price
+        break
+      endif
+    endfor
+    assign show_compare_price = false
+    if compare_at_price > price
+      assign show_compare_price = true
+    endif
+  endif
+
+  assign discount_percent = 0
+  if show_discount_label and show_compare_price
+    assign discount_percent = compare_at_price | minus: price | times: 100.0 | divided_by: compare_at_price | round
+  endif
+  if discount_percent < 1
+    assign show_discount_label = false
+  endif
+
   # Determine if currency code should be shown
+  # Card context always follows the card setting, so the swatch response (fetched from the product URL) matches the first render
   assign use_currency = false
-  if product.handle == product_resource.handle
+  if is_card
+    if settings.currency_code_enabled_product_cards
+      assign use_currency = true
+    endif
+  elsif product.handle == product_resource.handle
     if settings.currency_code_enabled_product_pages
       assign use_currency = true
     endif
@@ -72,9 +141,13 @@
     assign price_min = price_min | money
     assign price_max = price_max | money
   endif
+
+  if show_from_price
+    assign price = 'content.price_from' | t: price: price
+  endif
 -%}
 
-<div ref="priceContainer">
+<div ref="priceContainer"{% if is_card %} class="price--card"{% endif %}>
   {% if has_volume_pricing %}
     {% comment %} Volume pricing display {% endcomment %}
     {% if show_compare_price %}
@@ -89,26 +162,26 @@
     </span>
   {% else %}
     {% comment %} Standard pricing display: render only the active branch (regular or sale) {% endcomment %}
-    {% if show_compare_price %}
+    {% if show_compare_price %}{% if is_card %}<span class="price__amounts">{% endif %}
       {% if show_sale_price_first %}
         <span class="price-item__group price">
           <span class="visually-hidden">{{ 'content.price_sale' | t }}&nbsp;</span>
           <bdi>{{ price | default: '&nbsp;' }}</bdi>
         </span>
-        <span class="price-item__group price-item--regular compare-at-price">
+        {% if show_compare_at_item %}<span class="price-item__group price-item--regular compare-at-price">
           <span class="visually-hidden">{{ 'content.price_regular' | t }}&nbsp;</span>
           <bdi>{{- compare_at_price -}}</bdi>
-        </span>
+        </span>{% endif %}
       {% else %}
-        <span class="price-item__group price-item--regular compare-at-price">
+        {% if show_compare_at_item %}<span class="price-item__group price-item--regular compare-at-price">
           <span class="visually-hidden">{{ 'content.price_regular' | t }}&nbsp;</span>
           <bdi>{{- compare_at_price -}}</bdi>
-        </span>
+        </span>{% endif %}
         <span class="price-item__group price">
           <span class="visually-hidden">{{ 'content.price_sale' | t }}&nbsp;</span>
           <bdi>{{ price | default: '&nbsp;' }}</bdi>
         </span>
-      {% endif %}
+      {% endif %}{% if is_card %}</span>{% endif %}{% if show_discount_label %}<span class="price-item__group price-discount">{{ 'content.price_discount_off' | t: percent: discount_percent }}</span>{% endif %}
     {% else %}
       <span class="price"
         ><bdi>{{ price | default: '&nbsp;' }}</bdi></span

@@ -53,15 +53,118 @@
         results_size: collection.products_count
       %}
 
-      {% assign products_per_page = 24 %}
+      {% liquid
+        assign products_per_page = section.settings.products_per_page | default: 24
 
-      {% if section.settings.enable_infinite_scroll == false %}
-        {% assign products_per_page = section.settings.products_per_page %}
-      {% endif %}
+        assign load_more_button = false
+        if section.settings.enable_infinite_scroll and section.settings.load_trigger == 'button'
+          assign load_more_button = true
+        endif
+      %}
 
       {% paginate collection.products by products_per_page %}
+        {% liquid
+          # Promo tiles: Grid layout, first page only, optionally hidden while filters are active
+          assign show_promos = false
+          if paginate.current_page == 1 and section.settings.layout_type == 'grid'
+            assign show_promos = true
+          endif
+
+          if show_promos and section.settings.show_promos_when_filtered == false
+            for filter in collection.filters
+              case filter.type
+                when 'price_range'
+                  if filter.min_value.value != null or filter.max_value.value != null
+                    assign show_promos = false
+                  endif
+                when 'boolean'
+                  if filter.active_values[0].value
+                    assign show_promos = false
+                  endif
+                else
+                  if filter.active_values.size > 0
+                    assign show_promos = false
+                  endif
+              endcase
+            endfor
+          endif
+
+          assign promo_chunks = '' | split: ','
+          assign promo_cells_used = 0
+
+          # Fixed desktop columns let a tile be skipped when too few products follow to fill its row(s)
+          assign promo_columns = 0
+          if section.settings.grid_columns != blank and section.settings.grid_columns != 'auto'
+            assign promo_columns = section.settings.grid_columns | plus: 0
+          endif
+
+          # Dense grid flow whenever this section can hold tiles, on every page (tiles may be prepended later)
+          assign has_promos = false
+          if section.settings.layout_type == 'grid'
+            for promo_block in section.blocks
+              if promo_block.type == '_collection-promo-tile'
+                if promo_block.settings.media_type == 'video'
+                  assign promo_media = promo_block.settings.video
+                else
+                  assign promo_media = promo_block.settings.image
+                endif
+
+                if promo_media != blank or request.design_mode
+                  assign has_promos = true
+                  break
+                endif
+              endif
+            endfor
+          endif
+        %}
+
+        {% if show_promos %}
+          {% capture promo_output %}{% content_for 'blocks' %}{% endcapture %}
+          {% assign promo_chunks = promo_output | split: '<!--promo:' %}
+        {% endif %}
+
         {% capture children %}
           {% for product in collection.products %}
+            {%- for promo_chunk in promo_chunks offset: 1 -%}
+              {%- assign promo_marker = promo_chunk | split: '-->' | first -%}
+              {%- assign promo_parts = promo_marker | split: ',' -%}
+              {%- assign promo_position = promo_parts[0] | plus: 0 -%}
+              {%- if promo_position == forloop.parentloop.index0 -%}
+                {%- liquid
+                  assign promo_fits = true
+                  assign promo_rows = 1
+                  if promo_parts[1] == '2x2'
+                    assign promo_rows = 2
+                  endif
+                  assign promo_cells = promo_rows | times: 2
+
+                  if promo_columns > 0
+                    # Row the tile lands in, assuming earlier items pack from the start of the grid
+                    assign promo_used = promo_position | plus: promo_cells_used
+                    assign promo_row = promo_used | divided_by: promo_columns
+                    assign promo_row_used = promo_used | modulo: promo_columns
+                    if promo_row_used > 0
+                      assign promo_row_free = promo_columns | minus: promo_row_used
+                      unless promo_parts[2] == 'right' and promo_row_free >= 2
+                        assign promo_row = promo_row | plus: 1
+                      endunless
+                    endif
+
+                    # Products needed after the tile to fill every cell up to the end of its last row
+                    assign promo_needed = promo_row | plus: promo_rows | times: promo_columns | minus: promo_used | minus: promo_cells
+                    assign promo_following = collection.products.size | minus: promo_position
+                    if promo_following < promo_needed
+                      assign promo_fits = false
+                    endif
+                  endif
+                -%}
+                {%- if promo_fits -%}
+                  {%- assign promo_cells_used = promo_cells_used | plus: promo_cells -%}
+                  {%- assign promo_marker_size = promo_marker.size | plus: 3 -%}
+                  {{- promo_chunk | slice: promo_marker_size, promo_chunk.size -}}
+                {%- endif -%}
+              {%- endif -%}
+            {%- endfor %}
             <li
               id="{{ section.id }}-{{ product.id }}"
               class="product-grid__item product-grid__item--{{ forloop.index0 }}"
@@ -84,7 +187,9 @@
           children: children,
           products: collection.products,
           paginate: paginate,
-          enable_infinite_scroll: section.settings.enable_infinite_scroll
+          enable_infinite_scroll: section.settings.enable_infinite_scroll,
+          has_promos: has_promos,
+          load_more_button: load_more_button
         %}
       {% endpaginate %}
     </div>
@@ -97,6 +202,11 @@
   "enabled_on": {
     "templates": ["collection"]
   },
+  "blocks": [
+    {
+      "type": "_collection-promo-tile"
+    }
+  ],
   "settings": [
     {
       "type": "select",
@@ -113,6 +223,39 @@
         }
       ],
       "default": "grid"
+    },
+    {
+      "type": "select",
+      "id": "grid_columns",
+      "label": "t:settings.columns",
+      "options": [
+        {
+          "value": "auto",
+          "label": "t:options.auto"
+        },
+        {
+          "value": "2",
+          "label": "t:options.two_number"
+        },
+        {
+          "value": "3",
+          "label": "t:options.three_number"
+        },
+        {
+          "value": "4",
+          "label": "t:options.four_number"
+        },
+        {
+          "value": "5",
+          "label": "t:options.five_number"
+        },
+        {
+          "value": "6",
+          "label": "t:options.six_number"
+        }
+      ],
+      "default": "auto",
+      "visible_if": "{{ section.settings.layout_type == 'grid' }}"
     },
     {
       "type": "select",
@@ -137,7 +280,7 @@
         }
       ],
       "default": "medium",
-      "visible_if": "{{ section.settings.layout_type == 'grid' }}"
+      "visible_if": "{{ section.settings.layout_type == 'grid' and section.settings.grid_columns == 'auto' }}"
     },
     {
       "type": "select",
@@ -158,8 +301,26 @@
     {
       "type": "checkbox",
       "id": "enable_infinite_scroll",
-      "label": "t:settings.auto_load_products",
+      "label": "t:settings.load_products_without_reload",
+      "info": "t:info.pagination_numbered_when_off",
       "default": true
+    },
+    {
+      "type": "select",
+      "id": "load_trigger",
+      "label": "t:settings.load_trigger",
+      "options": [
+        {
+          "value": "scroll",
+          "label": "t:options.on_scroll"
+        },
+        {
+          "value": "button",
+          "label": "t:options.load_more_button"
+        }
+      ],
+      "default": "scroll",
+      "visible_if": "{{ section.settings.enable_infinite_scroll }}"
     },
     {
       "type": "range",
@@ -168,8 +329,18 @@
       "min": 8,
       "max": 36,
       "step": 4,
-      "default": 24,
-      "visible_if": "{{ section.settings.enable_infinite_scroll == false }}"
+      "default": 24
+    },
+    {
+      "type": "header",
+      "content": "t:content.promo_tiles"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_promos_when_filtered",
+      "label": "t:settings.show_promos_when_filtered",
+      "info": "t:info.promo_tiles",
+      "default": true
     },
     {
       "type": "header",

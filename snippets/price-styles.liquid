@@ -60,4 +60,36 @@
   .price-item__group {
     display: inline-block;
   }
+
+  /* Product card price line (spec 002): price + compare-at stay together, the discount label wraps */
+  .price--card {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    column-gap: var(--gap-xs);
+  }
+
+  .price--card > .price__amounts {
+    display: inline-flex;
+    align-items: baseline;
+    column-gap: var(--gap-xs);
+    white-space: nowrap;
+  }
+
+  .price--card > .unit-price {
+    flex-basis: 100%;
+  }
+
+  .price--card .compare-at-price {
+    color: var(
+      --color-price-compare-at,
+      rgb(var(--color-rgb, var(--color-foreground-rgb)) / var(--opacity-subdued-text))
+    );
+  }
+
+  .price-discount {
+    color: var(--color-price-sale, currentColor);
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
 {% endstylesheet %}

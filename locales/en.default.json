@@ -11,12 +11,15 @@
   "accessibility": {
     "account": "Account",
     "active_filters": "Active filters:",
+    "back_to_top": "Back to top",
+    "breadcrumb": "Breadcrumb",
     "cart": "Cart",
     "cart_count": "Total items in cart",
     "close_dialog": "Close dialog",
     "country_region": "Country/Region",
     "country_results_count": "{{ count }} results",
     "product_details": "Product details",
+    "product_list_tabs": "Product collections",
     "show_product_details": "Show product details for {{ product_name }}",
     "show_submenu": "Show {{ title }} submenu",
     "decrease_quantity": "Decrease quantity",
@@ -75,8 +78,10 @@
     "link_to_policy": "Policy: {{ title }}",
     // Screen reader names for links to the home page, the page that lists all products (/collections/all), and the page that lists all collections (/collections)
     "link_to_home": "Home",
+    "slide_link": "Open slide link",
     "link_to_catalog": "All products",
-    "link_to_collections": "All collections"
+    "link_to_collections": "All collections",
+    "wishlist": "Wishlist"
   },
   "actions": {
     // Quick add button on product cards, shortened version of add to cart
@@ -95,6 +100,8 @@
     // Button to remove all applied product filters
     "clear_all": "Clear all",
     "close": "Close",
+    "filter_with_count": "Filter ({{ count }})",
+    "load_more": "Load more",
     "open": "Open",
     // Continue shopping link on the cart page which takes the user back to a collection page
     "continue_shopping": "Continue shopping",
@@ -103,6 +110,8 @@
     "log_in": "Sign in",
     "log_out": "Log out",
     "open_image_in_full_screen": "Open image in full screen",
+    "read_less": "Read less",
+    "read_more": "Read more",
     // Button to remove applied filters from search/collection results
     "remove": "Remove",
     "remove_discount": "Remove discount {{ code }}",
@@ -117,6 +126,7 @@
     "show_less": "Show less",
     "show_more": "Show more",
     "sign_in_options": "Other sign in options",
+    "sort_by": "Sort by",
     // AR button to view 3D product model in physical space
     "view_in_your_space": "View in your space",
     // Button to view complete collection/product list
@@ -174,9 +184,15 @@
     }
   },
   "content": {
+    "breadcrumb_home": "Home",
     "cancel": "Cancel",
     "discount": "Discount",
     "account_title": "Account",
+    "price_discount_off": "{{ percent }}% OFF",
+    "product_badge_bestseller": "Bestseller",
+    "product_badge_low_stock": "Only few left",
+    "product_badge_new": "New",
+    "products_loaded": "More products loaded",
     "terms_and_policies": "Terms and Policies",
     "account_title_personalized": "Hi {{ first_name }}",
     "account_orders": "Orders",
@@ -296,6 +312,7 @@
     "variant": "Variant",
     "variant_total": "Variant total",
     "view_cart": "View cart",
+    "wishlist": "Wishlist",
     "your_cart": "Your cart",
     "items_added_to_cart": {
       "one": "1 item added to cart",

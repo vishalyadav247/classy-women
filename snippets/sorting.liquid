@@ -8,6 +8,7 @@
   @param {string} [sort_position] - { 'desktop' | 'mobile' } Used in a data-testID selector for automated testing
   @param {boolean} should_use_select_on_mobile - Whether to use a select element for the sorting component on mobile
   @param {string} section_id - The section ID
+  @param {string} [label] - Label text for the sort control. Defaults to the `actions.sort` translation ("Sort")
 {%- enddoc -%}
 
 <sorting-filter-component
@@ -20,6 +21,11 @@
   data-should-use-select-on-mobile="{{ should_use_select_on_mobile }}"
 >
   {% liquid
+    assign sort_label = 'actions.sort' | t
+    if label != blank
+      assign sort_label = label
+    endif
+
     assign default_sort_by = results.default_sort_by
     for option in results.sort_options
       if option.value == sort_by
@@ -33,7 +39,7 @@
       for="sort-select-{{ section_id }}"
       class="facets__label"
     >
-      {{- 'actions.sort' | t -}}
+      {{- sort_label -}}
     </label>
     <div class="sorting-filter__select-wrapper">
       <select
@@ -88,7 +94,7 @@
           class="facets__label"
           id="sort-label-{{ section_id }}"
         >
-          {{- 'actions.sort' | t -}}
+          {{- sort_label -}}
         </span>
         <span
           class="facets__status h6 desktop:hidden"

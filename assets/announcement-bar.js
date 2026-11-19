@@ -1,4 +1,5 @@
 import { Component } from '@theme/component';
+import { prefersReducedMotion } from '@theme/utilities';
 
 /**
  * Announcement banner custom element that allows fading between content.
@@ -46,10 +47,14 @@ export class AnnouncementBar extends Component {
   play(interval = this.autoplayInterval) {
     if (!this.autoplay) return;
 
+    // Never auto-advance when the user prefers reduced motion. Manual navigation still works.
+    if (prefersReducedMotion()) return;
+
     this.paused = false;
 
     this.#interval = setInterval(() => {
-      if (this.matches(':hover') || document.hidden) return;
+      // Pause while hovered or while keyboard focus is inside the bar (e.g. on an arrow or link).
+      if (this.matches(':hover') || this.matches(':focus-within') || document.hidden) return;
 
       this.next();
     }, interval);
@@ -120,9 +125,11 @@ export class AnnouncementBar extends Component {
   }
 
   /**
-   * Pause the slideshow when the page is hidden.
+   * Suspend the slideshow while the page is hidden and restart it when the page is visible again.
+   * suspend() (not pause()) leaves the `paused` state alone, so resume() can restart autoplay and a
+   * deliberate pause() is still honoured. play() keeps skipping autoplay under reduced motion.
    */
-  #handleVisibilityChange = () => (document.hidden ? this.pause() : this.resume());
+  #handleVisibilityChange = () => (document.hidden ? this.suspend() : this.resume());
 }
 
 if (!customElements.get('announcement-bar-component')) {

@@ -1,6 +1,6 @@
 # Spec 005: Collection page
 
-- **Status:** Draft
+- **Status:** Done (2026-11-19)
 - **Mockup(s):** `.claude/design/collection.png`, everything between the header and the footer (design-map rows C1–C5)
 - **Template(s) affected:** `collection` (the default collection template; any alternate collection templates may reuse the same sections)
 
@@ -42,17 +42,17 @@ The merchant can reorder, hide or remove S5 and S6 in the theme editor. S1–S4 
   - Option to fall back to the collection's own featured image when no banner image is set.
   - Show/hide breadcrumb.
   - Show/hide description.
-  - Left panel background colour (light grey in the mockup) via a colour scheme. `[NEEDS CLARIFICATION: exact background hex for the left panel]`
+  - Left panel background colour (light grey in the mockup) via a colour scheme. `[RESOLVED — see Clarifications log: exact background hex for the left panel]`
 - **Data-driven content:**
   - Breadcrumb: "Home" link to the storefront root, "/" separator, then the current collection title (not linked). Mockup reads "Home / Bestsellers".
   - Collection title (mockup: "Bestsellers").
   - Collection description (mockup: "Best-loved. Best carried. From totes and hobos to minis, clutches, and backpacks, these are the bestsellers that women keep coming back to.").
 - **Layout (desktop):**
-  - Full-width band. Two columns: text panel on the left takes roughly 40% of the width, image on the right takes roughly 60%. `[NEEDS CLARIFICATION: exact column split, e.g. 40/60 or 5/7]`
+  - Full-width band. Two columns: text panel on the left takes roughly 40% of the width, image on the right takes roughly 60%. `[RESOLVED — see Clarifications log: exact column split, e.g. 40/60 or 5/7]`
   - Breadcrumb sits at the top-left of the text panel. Title and description are vertically centred (or slightly below centre) in the panel, left-aligned.
   - Title is a medium-weight heading, noticeably smaller than a hero heading. Description is small body text, max about 2–3 lines wide.
-  - Image fills its column edge to edge (cover crop), no rounded corners. Banner height ≈ 385px at 1920px wide. `[NEEDS CLARIFICATION: banner height / aspect ratio of the image column]`
-  - `[NEEDS CLARIFICATION: font family, sizes and weights for breadcrumb, title and description]`
+  - Image fills its column edge to edge (cover crop), no rounded corners. Banner height ≈ 385px at 1920px wide. `[RESOLVED — see Clarifications log: banner height / aspect ratio of the image column]`
+  - `[RESOLVED — see Clarifications log: font family, sizes and weights for breadcrumb, title and description]`
 - **Layout (mobile):** `[ASSUMPTION]` Columns stack. Image first (full width, roughly 4:3 or 16:9 crop), then the grey text panel with breadcrumb, title and description, left-aligned with standard page padding. `[ASSUMPTION]` Breadcrumb may alternatively sit above the image; choose image-first unless the merchant says otherwise.
 - **Interactions & states:**
   - Breadcrumb "Home" link shows the theme's standard link hover.
@@ -88,11 +88,11 @@ The merchant can reorder, hide or remove S5 and S6 in the theme editor. S1–S4 
   - "Sort by" with a down chevron and "Filter (1)" right-aligned, each in its own cell separated by thin vertical dividers.
   - Left side of the row is empty in the mockup.
   - Active filter chips sit in a row below the toolbar, left-aligned with the grid. Each chip is a small outlined pill with "×" before the label.
-  - `[NEEDS CLARIFICATION: is there a "Clear all" link when 2+ chips are active? Not visible in the mockup]`
+  - `[RESOLVED — see Clarifications log: is there a "Clear all" link when 2+ chips are active? Not visible in the mockup]`
 - **Layout (mobile):** `[ASSUMPTION]` Toolbar becomes a two-cell bar: "Sort by" left, "Filter (n)" right, each half width. Product count moves to its own line above or below the bar, centred. Chips wrap onto multiple lines (or scroll horizontally) under the bar.
 - **Interactions & states:**
   - **Sort by:** opens a dropdown/list of sort options; selecting one updates the grid without a full page reload, keeps active filters, updates the URL, and marks the selected option. Current sort is reflected when the page loads with a sort in the URL.
-  - **Filter (n):** opens a filter drawer. `[ASSUMPTION]` Drawer slides in from the right on desktop and from the bottom or right (full screen) on mobile, with an overlay behind it, a close (×) control, collapsible filter groups, and "Clear all" and "Apply"/"View results" actions. `[NEEDS CLARIFICATION: drawer side (left/right), and whether filters apply instantly or on "Apply"]`
+  - **Filter (n):** opens a filter drawer. `[ASSUMPTION]` Drawer slides in from the right on desktop and from the bottom or right (full screen) on mobile, with an overlay behind it, a close (×) control, collapsible filter groups, and "Clear all" and "Apply"/"View results" actions. `[RESOLVED — see Clarifications log: drawer side (left/right), and whether filters apply instantly or on "Apply"]`
   - "(n)" counts active filter values; with none active the label reads "Filter" (no "(0)"). `[ASSUMPTION]`
   - **Chip:** clicking a chip removes that filter value and refreshes the grid, count and "(n)".
   - Drawer closes on overlay click, close button and Escape; focus is trapped inside while open and returns to the Filter button on close.
@@ -114,18 +114,18 @@ The merchant can reorder, hide or remove S5 and S6 in the theme editor. S1–S4 
 - **Merchant-editable content:**
   - Desktop columns (4 in the mockup) and mobile columns.
   - Promotional tiles, added as repeatable items. Per tile:
-    - Image (required for display). `[NEEDS CLARIFICATION: should tiles also accept a video?]`
+    - Image (required for display). `[RESOLVED — see Clarifications log: should tiles also accept a video?]`
     - Overlay text in two parts: a highlighted word (e.g. "flora", "ayla", "ivo", shown on a small solid background box) and a plain continuation (e.g. "shoulder bag", "crossbody bag", "micro bag").
     - Link label (e.g. "SHOP NOW") and link URL (the whole tile is clickable).
     - Position in the grid (the slot or row it appears at).
     - Side: left (columns 1–2) or right (columns 3–4).
     - Text placement: top or bottom (the mockup shows top for the first two tiles and bottom for the third). Title is always on the left and "SHOP NOW" on the right of the same line.
-    - Text colour / colour scheme for the overlay (white text on the mockup images). `[NEEDS CLARIFICATION: colour of the highlight box behind the first word; looks like a muted yellow/olive]`
-  - `[NEEDS CLARIFICATION: font for the overlay text; it looks like a lowercase, light display face that differs from the body font]`
+    - Text colour / colour scheme for the overlay (white text on the mockup images). `[RESOLVED — see Clarifications log: colour of the highlight box behind the first word; looks like a muted yellow/olive]`
+  - `[RESOLVED — see Clarifications log: font for the overlay text; it looks like a lowercase, light display face that differs from the body font]`
 - **Data-driven content:** Every non-promo cell is the standard product card (spec 002): image, badge (BESTSELLER / ONLY FEW LEFT / SOLD OUT), wishlist heart, swatch thumbnails, title, price, compare-at price, red "% OFF". The grid shows the collection's products in the current sort and filter order.
 - **Layout (desktop):**
-  - 4 equal columns with small, equal gaps (~4–6px at 1920px). `[NEEDS CLARIFICATION: exact column gap and side padding]`
-  - Promo tiles span **2 columns wide**. In the mockup each tile's height equals one product-card row (image + swatches + title + price), so it is 2 columns × 1 row, not 2 × 2 rows. `[NEEDS CLARIFICATION: brief says 2×2, mockup reads as 2 columns × 1 row. Confirm]`
+  - 4 equal columns with small, equal gaps (~4–6px at 1920px). `[RESOLVED — see Clarifications log: exact column gap and side padding]`
+  - Promo tiles span **2 columns wide**. In the mockup each tile's height equals one product-card row (image + swatches + title + price), so it is 2 columns × 1 row, not 2 × 2 rows. `[RESOLVED — see Clarifications log: brief says 2×2, mockup reads as 2 columns × 1 row. Confirm]`
   - Mockup placement (rows of the grid, counted from 1): row 2 left (cols 1–2), row 4 right (cols 3–4), row 6 left (cols 1–2). Products flow around the tiles, so rows with a tile hold 2 products.
   - Promo image covers its tile (cover crop), no rounded corners, no card chrome (no badge, heart, title or price).
   - With 19 products and 3 tiles, the last row holds one product left-aligned; partial last rows are left-aligned with no stretching.
@@ -133,8 +133,8 @@ The merchant can reorder, hide or remove S5 and S6 in the theme editor. S1–S4 
 - **Interactions & states:**
   - Promo tile hover: `[ASSUMPTION]` subtle image zoom or "SHOP NOW" underline; cursor is a pointer.
   - Promo tile without an image: tile is not rendered (no empty block), products fill its place. In the theme editor a placeholder may be shown so the merchant can see where it will go.
-  - Promo tile whose position is beyond the last product (e.g. a short or heavily filtered collection): not shown, or appended at the end. `[NEEDS CLARIFICATION: hide or append out-of-range tiles?]`
-  - Tiles while filtering/sorting: `[NEEDS CLARIFICATION: should promo tiles stay visible when filters are active (the mockup shows them with one active filter)?]` Default `[ASSUMPTION]`: they stay.
+  - Promo tile whose position is beyond the last product (e.g. a short or heavily filtered collection): not shown, or appended at the end. `[RESOLVED — see Clarifications log: hide or append out-of-range tiles?]`
+  - Tiles while filtering/sorting: `[RESOLVED — see Clarifications log: should promo tiles stay visible when filters are active (the mockup shows them with one active filter)?]` Default `[ASSUMPTION]`: they stay.
   - Tiles on later pages: `[ASSUMPTION]` positions are counted on page 1 only and do not repeat on later pages / loaded batches.
   - Sold-out, on-sale, low-stock and no-image product states are handled by the standard product card (spec 002).
   - Empty collection: S2 count reads "0 products" and the grid area shows an empty-state message; promo tiles are hidden.
@@ -154,7 +154,7 @@ The merchant can reorder, hide or remove S5 and S6 in the theme editor. S1–S4 
 - **Position:** Directly under the last row of S3, centred. Followed by S5.
 - **Merchant-editable content:**
   - Products per page.
-  - Pagination style. `[NEEDS CLARIFICATION: the mockup shows all 19 products with no control. Choose one of: numbered pages, "Load more" button, or infinite scroll]`
+  - Pagination style. `[RESOLVED — see Clarifications log: the mockup shows all 19 products with no control. Choose one of: numbered pages, "Load more" button, or infinite scroll]`
 - **Data-driven content:** Total product count, current page, whether more products exist.
 - **Layout (desktop):** `[ASSUMPTION]` A centred control under the grid, with spacing above S5. If "Load more" is chosen: an outlined button labelled from translations, optionally with "Showing X of Y". If numbered: previous/next arrows with page numbers.
 - **Layout (mobile):** `[ASSUMPTION]` Same control, full width or centred, touch target at least 44px tall.
@@ -173,7 +173,7 @@ The merchant can reorder, hide or remove S5 and S6 in the theme editor. S1–S4 
 ### S5. "Explore our categories" collection carousel
 - **Position:** After the grid and pagination, before S6.
 - **Merchant-editable content:**
-  - Heading (mockup: "EXPLORE OUR CATEGORIES", uppercase, left-aligned). Case set by the merchant's text or a setting, not forced in code. `[NEEDS CLARIFICATION: is the uppercase a style or the literal copy?]`
+  - Heading (mockup: "EXPLORE OUR CATEGORIES", uppercase, left-aligned). Case set by the merchant's text or a setting, not forced in code. `[RESOLVED — see Clarifications log: is the uppercase a style or the literal copy?]`
   - Ordered list of collections to show (mockup: Tote Bags, Shoulder Bags, Crossbody Bags, Top Handle Bags).
   - Link label (mockup: "View products").
   - Optional image override per collection. `[ASSUMPTION]`
@@ -182,12 +182,12 @@ The merchant can reorder, hide or remove S5 and S6 in the theme editor. S1–S4 
 - **Layout (desktop):**
   - Heading above, left-aligned with the content edge.
   - 4 tiles visible in a row, equal width, small gap, no peek of a 5th tile.
-  - Portrait images, roughly 7:8 at the mockup size (≈ 440 × 500px at 1920px). `[NEEDS CLARIFICATION: exact image aspect ratio, e.g. 4:5 or 3:4]`
+  - Portrait images, roughly 7:8 at the mockup size (≈ 440 × 500px at 1920px). `[RESOLVED — see Clarifications log: exact image aspect ratio, e.g. 4:5 or 3:4]`
   - Under each image: collection title (small text) and an underlined "View products" link, both left-aligned.
   - Prev/next arrows are small round buttons overlaid on the vertical middle of the images, at the left edge of the first tile and the right edge of the last tile.
 - **Layout (mobile):** `[ASSUMPTION]` Horizontal swipe carousel with about 1.5–2 tiles visible (the next tile peeks in), arrows hidden, swipe enabled.
 - **Interactions & states:**
-  - Arrows move the carousel by one tile (or one page). `[NEEDS CLARIFICATION: step by 1 tile or by a full page of 4?]`
+  - Arrows move the carousel by one tile (or one page). `[RESOLVED — see Clarifications log: step by 1 tile or by a full page of 4?]`
   - Arrow disabled/hidden at the start and end (no looping). `[ASSUMPTION]` The mockup shows both arrows, which suggests more than 4 collections exist.
   - With 4 or fewer collections on desktop, no arrows are shown.
   - Image and title and "View products" all link to the collection. Hover: `[ASSUMPTION]` subtle image zoom and link colour/underline change.
@@ -210,8 +210,8 @@ The merchant can reorder, hide or remove S5 and S6 in the theme editor. S1–S4 
     - Colours (mockup): Black Crossbody Bags | Pink Sling Bags | Brown Tote Bags | Green Crossbody Bags | Red Sling Bags…
   - Optional free rich text (paragraphs of SEO copy). `[ASSUMPTION]`
   - "Read more" / "Read less" labels (from translations).
-  - Collapsed height (how many lines show before "Read more"). `[NEEDS CLARIFICATION: exact collapsed height; the mockup cuts off after about 4 lines]`
-  - `[NEEDS CLARIFICATION: should the links come from a navigation menu chosen by the merchant, from free rich text, or both? Should the content be different per collection (e.g. a collection metafield) or the same on every collection?]`
+  - Collapsed height (how many lines show before "Read more"). `[RESOLVED — see Clarifications log: exact collapsed height; the mockup cuts off after about 4 lines]`
+  - `[RESOLVED — see Clarifications log: should the links come from a navigation menu chosen by the merchant, from free rich text, or both? Should the content be different per collection (e.g. a collection metafield) or the same on every collection?]`
 - **Data-driven content:** None required. `[ASSUMPTION]` If per-collection content is chosen, it comes from a collection metafield and the section hides when empty.
 - **Layout (desktop):**
   - Left-aligned, content width, small body text.
@@ -234,24 +234,32 @@ The merchant can reorder, hide or remove S5 and S6 in the theme editor. S1–S4 
   - [ ] AC6.7 The section renders nothing when it has no content.
 
 ## Open questions
-- `[NEEDS CLARIFICATION]` S1: exact hex of the banner's light grey left panel.
-- `[NEEDS CLARIFICATION]` S1: column split (≈40/60) and banner height / image aspect ratio.
-- `[NEEDS CLARIFICATION]` S1: fonts, sizes and weights for breadcrumb, title and description (text too small to read precisely).
-- `[NEEDS CLARIFICATION]` S2: is there a "Clear all" link next to the chips when 2+ filters are active?
-- `[NEEDS CLARIFICATION]` S2: filter drawer side (left/right) and whether filters apply instantly or on an "Apply" button.
-- `[NEEDS CLARIFICATION]` S3: brief says promo tiles are 2×2, but in the mockup they span 2 columns × 1 card-row height. Which is correct?
-- `[NEEDS CLARIFICATION]` S3: exact grid column gap and page side padding.
-- `[NEEDS CLARIFICATION]` S3: should promo tiles accept video as well as image?
-- `[NEEDS CLARIFICATION]` S3: colour of the highlight box behind the first overlay word, and the overlay font (looks like a light lowercase display face).
-- `[NEEDS CLARIFICATION]` S3: when a tile's position is beyond the available products, hide it or append it at the end?
-- `[NEEDS CLARIFICATION]` S3: should promo tiles stay visible while filters are active?
-- `[NEEDS CLARIFICATION]` S4: pagination style: numbered pages, "Load more" button or infinite scroll; and products per page (mockup shows all 19 with no control).
-- `[NEEDS CLARIFICATION]` S5: is "EXPLORE OUR CATEGORIES" literal uppercase copy or an uppercase style?
-- `[NEEDS CLARIFICATION]` S5: exact image aspect ratio (≈7:8 measured; 4:5 or 3:4?).
-- `[NEEDS CLARIFICATION]` S5: arrows step by one tile or by a full page of 4?
-- `[NEEDS CLARIFICATION]` S6: collapsed height / line count before "Read more".
-- `[NEEDS CLARIFICATION]` S6: links source (navigation menu, rich text, or both) and whether the content is global or per collection (metafield).
+- `[RESOLVED — see Clarifications log]` S1: exact hex of the banner's light grey left panel.
+- `[RESOLVED — see Clarifications log]` S1: column split (≈40/60) and banner height / image aspect ratio.
+- `[RESOLVED — see Clarifications log]` S1: fonts, sizes and weights for breadcrumb, title and description (text too small to read precisely).
+- `[RESOLVED — see Clarifications log]` S2: is there a "Clear all" link next to the chips when 2+ filters are active?
+- `[RESOLVED — see Clarifications log]` S2: filter drawer side (left/right) and whether filters apply instantly or on an "Apply" button.
+- `[RESOLVED — see Clarifications log]` S3: brief says promo tiles are 2×2, but in the mockup they span 2 columns × 1 card-row height. Which is correct?
+- `[RESOLVED — see Clarifications log]` S3: exact grid column gap and page side padding.
+- `[RESOLVED — see Clarifications log]` S3: should promo tiles accept video as well as image?
+- `[RESOLVED — see Clarifications log]` S3: colour of the highlight box behind the first overlay word, and the overlay font (looks like a light lowercase display face).
+- `[RESOLVED — see Clarifications log]` S3: when a tile's position is beyond the available products, hide it or append it at the end?
+- `[RESOLVED — see Clarifications log]` S3: should promo tiles stay visible while filters are active?
+- `[RESOLVED — see Clarifications log]` S4: pagination style: numbered pages, "Load more" button or infinite scroll; and products per page (mockup shows all 19 with no control).
+- `[RESOLVED — see Clarifications log]` S5: is "EXPLORE OUR CATEGORIES" literal uppercase copy or an uppercase style?
+- `[RESOLVED — see Clarifications log]` S5: exact image aspect ratio (≈7:8 measured; 4:5 or 3:4?).
+- `[RESOLVED — see Clarifications log]` S5: arrows step by one tile or by a full page of 4?
+- `[RESOLVED — see Clarifications log]` S6: collapsed height / line count before "Read more".
+- `[RESOLVED — see Clarifications log]` S6: links source (navigation menu, rich text, or both) and whether the content is global or per collection (metafield).
 
 ## Clarifications log
 | Question | Answer | Date |
 |---|---|---|
+| Visual values (S1 panel hex, column split, banner height, fonts, grid gap, S5 ratio, overlay highlight colour/font) | Editable settings with defaults estimated from the mockup (B1–B3). | 2026-11-19 |
+| S4 pagination (A12) | **Merchant choice** in the editor: "Load more" button / infinite scroll / numbered pages. Default: Load more, 24 per page, no full reload. | 2026-11-19 |
+| S2 filters (A14) | **Merchant choice**: apply instantly or with an Apply button; drawer side left or right. Default: right drawer, instant. Active filters as chips, "Clear all" when 2+ chips are active. | 2026-11-19 |
+| S3 promo tiles (A13) | **Merchant choice** per tile: 2 cols × 1 row (default, as mockup) or 2×2; image or video. Position set per tile; hidden if the position is past the last product. Section setting to show or hide tiles while filters are active (default: shown). | 2026-11-19 |
+| S3 overlay highlight | Live text; highlight colour and font are settings. | 2026-11-19 |
+| S5 categories | Heading is merchant copy shown in the shared section-heading style (uppercase by style, not literal copy). Arrows step one tile. | 2026-11-19 |
+| S6 SEO text | Per-collection rich-text metafield when set, otherwise shared text from the section; 4 lines collapsed, then "Read more". Links come from the rich text. | 2026-11-19 |
+| Product cards | Use the spec 002 card (already configured on templates/collection.json). | 2026-11-19 |

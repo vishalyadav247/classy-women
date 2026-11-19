@@ -1,0 +1,150 @@
+{%- doc -%}
+  Renders a single product status badge, chosen by a fixed priority (decision A3):
+  Sold out > Only few left > custom (metafield custom.badge) > New (tag badge:new)
+  > Bestseller (tag badge:bestseller) > Sale (only when settings.badge_show_sale is on).
+
+  The `[data-product-badge]` wrapper is always output, even when no rule applies, so
+  swatch updates (Section Rendering API) have a morph target. An empty wrapper is hidden
+  with `.product-badges:empty`.
+
+  Shared by product cards and the product page gallery (spec 006).
+
+  @param {product} product - The product to evaluate
+  @param {variant} [variant] - When present, Sold out, Only few left and Sale are evaluated for this variant
+  @param {string} [style] - 'card' (uses settings.badge_card_style) | 'filled' | 'text'. Defaults to 'filled'
+  @param {string} [class] - Extra classes on the wrapper
+
+  @example
+  {% render 'product-badge', product: product, variant: product.selected_variant, style: 'card' %}
+{%- enddoc -%}
+
+{%- liquid
+  assign resolved_style = style | default: 'filled'
+  if resolved_style == 'card'
+    assign resolved_style = settings.badge_card_style | default: 'filled'
+  endif
+  if resolved_style != 'text'
+    assign resolved_style = 'filled'
+  endif
+
+  assign badge_type = ''
+  assign badge_label = ''
+
+  if product != blank
+    # 1. Sold out
+    if product.available == false
+      assign badge_type = 'sold-out'
+    elsif variant != blank and variant.available == false
+      assign badge_type = 'sold-out'
+    endif
+
+    # 2. Only few left (tracked stock only; 0 turns it off)
+    assign low_stock_threshold = settings.badge_low_stock_threshold | default: 0
+    if badge_type == '' and low_stock_threshold > 0
+      assign stock_total = 0
+      assign stock_tracked = true
+
+      if variant != blank
+        if variant.inventory_management == 'shopify' and variant.inventory_policy == 'deny'
+          assign stock_total = variant.inventory_quantity | at_least: 0
+        else
+          assign stock_tracked = false
+        endif
+      else
+        for product_variant in product.variants
+          if product_variant.available
+            if product_variant.inventory_management == 'shopify' and product_variant.inventory_policy == 'deny'
+              assign variant_stock = product_variant.inventory_quantity | at_least: 0
+              assign stock_total = stock_total | plus: variant_stock
+            else
+              assign stock_tracked = false
+              break
+            endif
+          endif
+        endfor
+      endif
+
+      if stock_tracked and stock_total >= 1 and stock_total <= low_stock_threshold
+        assign badge_type = 'low-stock'
+        assign badge_label = 'content.product_badge_low_stock' | t
+      endif
+    endif
+
+    # 3. Custom text from the product metafield custom.badge
+    if badge_type == ''
+      assign custom_badge = product.metafields.custom.badge.value | strip | escape
+      if custom_badge != blank
+        assign badge_type = 'custom'
+        assign badge_label = custom_badge
+      endif
+    endif
+
+    # 4. New / 5. Bestseller from product tags
+    if badge_type == ''
+      assign has_new_tag = false
+      assign has_bestseller_tag = false
+      for tag in product.tags
+        assign tag_handle = tag | strip | downcase
+        if tag_handle == 'badge:new'
+          assign has_new_tag = true
+        elsif tag_handle == 'badge:bestseller'
+          assign has_bestseller_tag = true
+        endif
+      endfor
+
+      if has_new_tag
+        assign badge_type = 'new'
+        assign badge_label = 'content.product_badge_new' | t
+      elsif has_bestseller_tag
+        assign badge_type = 'bestseller'
+        assign badge_label = 'content.product_badge_bestseller' | t
+      endif
+    endif
+
+    # 6. Sale (hidden when the merchant turns it off; defaults to on)
+    if badge_type == '' and settings.badge_show_sale != false
+      if variant != blank
+        if variant.compare_at_price > variant.price
+          assign badge_type = 'sale'
+        endif
+      elsif product.compare_at_price > product.price
+        assign badge_type = 'sale'
+      endif
+    endif
+
+    if badge_type == 'sold-out'
+      assign badge_label = 'content.product_badge_sold_out' | t
+    elsif badge_type == 'sale'
+      assign badge_label = 'content.product_badge_sale' | t
+    endif
+  endif
+
+  assign badge_color_class = ''
+  if resolved_style == 'filled' and badge_type != ''
+    if badge_type == 'sold-out'
+      assign badge_color_class = ' color-custom-badge-sold-out'
+    else
+      assign badge_color_class = ' color-custom-badge-sale'
+    endif
+  endif
+-%}
+
+{% render 'product-badges-styles' %}
+
+<div
+  class="product-badges product-badges--{{ settings.badge_position }} product-badges--{{ resolved_style }}{% if class != blank %} {{ class }}{% endif %}"
+  data-product-badge
+  style="
+    --badge-border-radius: {{ settings.badge_corner_radius }}px;
+    --badge-font-family: var(--font-{{ settings.badge_font_family }}--family); --badge-font-weight: var(--font-{{ settings.badge_font_family }}--weight); --badge-text-transform: {{ settings.badge_text_transform }};
+  "
+>
+  {%- if badge_type != '' -%}
+    <div
+      class="product-badges__badge product-badges__badge--rectangle{{ badge_color_class }}"
+      data-badge-type="{{ badge_type }}"
+    >
+      {{- badge_label -}}
+    </div>
+  {%- endif -%}
+</div>

@@ -1,8 +1,14 @@
 {%- doc -%}
   Renders media block contents (used in _media and _media-without-appearance blocks)
 
+  Optional block settings read when present (only `_media-without-appearance` defines them):
+  - `use_collection_image`: the caller passes the collection's featured image as `fallback_image`
+  - `hide_when_empty`: when no image resolves, nothing is rendered on the storefront (the editor keeps the placeholder)
+
   @param {object} [block] - The block object
   @param {boolean} [unset_image_tag] - if true, ignores the image focal point in the image
+  @param {object} [fallback_image] - image used when the block's own image is blank (e.g. the collection featured image)
+  @param {string} [alt_text_fallback] - alt text used when the image has no alt text (e.g. the collection or page title)
 {%- enddoc -%}
 
 {% liquid
@@ -10,7 +16,19 @@
   assign show_image = false
   assign show_video = false
 
-  if block_settings.background_color != blank
+  assign media_image = block_settings.image
+  if media_image == blank and fallback_image != blank
+    assign media_image = fallback_image
+  endif
+
+  assign hide_media = false
+  if block_settings.media_type == 'image' and block_settings.hide_when_empty and media_image == blank
+    unless request.design_mode
+      assign hide_media = true
+    endunless
+  endif
+
+  if block_settings.background_color != blank and hide_media == false
     render 'contrast-override', background_color: block_settings.background_color, section_id: block.id
   endif
 
@@ -23,6 +41,7 @@
   endif
 %}
 
+{% unless hide_media -%}
 <div
   class="
     media-block
@@ -42,11 +61,12 @@
 >
   {%- if show_image -%}
     {% capture image_tag %}
-      {% if block_settings.image != blank %}
+      {% if media_image != blank %}
         {% render 'image',
-          image: block_settings.image,
+          image: media_image,
           class: 'media-block__media border-style',
-          unset_image_tag: unset_image_tag
+          unset_image_tag: unset_image_tag,
+          alt_text_fallback: alt_text_fallback
         %}
       {% else %}
         <div class="media-block__media border-style">
@@ -78,6 +98,7 @@
     </div>
   {%- endif -%}
 </div>
+{%- endunless %}
 
 {% stylesheet %}
   .media-block {

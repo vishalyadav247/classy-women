@@ -22,6 +22,7 @@ export class OverflowMinimumEvent extends Event {
  * A custom element that wraps a list of items and moves them to an overflow slot when they don't fit.
  * This component is used in the header section and other areas.
  * @attr {string | null} minimum-items When set, the element enters a 'minimum-reached' state when visible items are at or below this number.
+ * @attr {string | null} maximum-items Optional. When set to a positive number, at most this many items stay visible; the rest move to the overflow slot even if they fit.
  * @example
  * <overflow-list minimum-items="2">
  *   <!-- list items -->
@@ -155,6 +156,15 @@ export class OverflowList extends DeclarativeShadowElement {
     return value ? parseInt(value, 10) : null;
   }
 
+  /**
+   * Get the maximum number of visible items (opt-in through the `maximum-items` attribute).
+   * @returns {number | null} The cap, or `null` when absent or not a positive integer (width-only overflow).
+   */
+  get maximumItems() {
+    const value = parseInt(this.getAttribute('maximum-items') ?? '', 10);
+    return Number.isInteger(value) && value > 0 ? value : null;
+  }
+
   get overflowSlot() {
     const { overflowSlot } = this.#refs;
     return overflowSlot;
@@ -278,6 +288,8 @@ export class OverflowList extends DeclarativeShadowElement {
     let overflowingElements = [];
     let placeholderWidth = 0;
     let hasOverflow = false;
+    // Whether the first overflowing item overflowed because of width (not only because of `maximum-items`).
+    let hasWidthOverflow = false;
 
     if (listHeight > 0) {
       list.style.setProperty('height', `${listHeight}px`);
@@ -294,13 +306,16 @@ export class OverflowList extends DeclarativeShadowElement {
     lastVisibleElement?.style.setProperty('order', '-1');
 
     const moreSlotRect = moreSlot.getBoundingClientRect();
+    const { maximumItems } = this;
 
     elements.forEach((element) => {
       const elementRect = element.getBoundingClientRect();
+      const exceedsMaximum = maximumItems !== null && visibleElements.length >= maximumItems;
 
-      if (elementRect.top > moreSlotRect.top) {
+      if (exceedsMaximum || elementRect.top > moreSlotRect.top) {
         if (!overflowingElements.length) {
           placeholderWidth = elementRect.width;
+          hasWidthOverflow = !exceedsMaximum;
         }
 
         hasOverflow = true;
@@ -329,7 +344,8 @@ export class OverflowList extends DeclarativeShadowElement {
     // Adjust the "More" button visibility.
     moreSlot.hidden = !hasOverflow;
 
-    if (hasOverflow) {
+    // Items capped only by `maximum-items` fit already, so they need no placeholder space.
+    if (hasOverflow && (maximumItems === null || hasWidthOverflow)) {
       // Set the width and height of the placeholder so the list can grow if there is space.
       placeholder.style.width = `${placeholderWidth}px`;
       placeholder.hidden = false;

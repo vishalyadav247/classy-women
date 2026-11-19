@@ -19,6 +19,12 @@ const MODAL_BREAKPOINT = 990;
  * panel is a modal dialog (`showModal()`) — native focus trap, scroll-lock,
  * and ARIA semantics. Same focus-on-close-button + restore-on-close UX.
  *
+ * Opt-in attributes (no change to the default behaviour without them):
+ * - `modal`: always open as a modal dialog with a backdrop, at every
+ *   viewport width (never squeezes the page).
+ * - `side="start"`: anchor the panel to the inline-start edge (left in LTR)
+ *   instead of the inline-end edge. Styling lives in theme-drawer-styles.
+ *
  * Dispatches {@link DrawerOpenEvent} and {@link DrawerCloseEvent}.
  *
  * @typedef {object} Refs
@@ -45,6 +51,14 @@ export class ThemeDrawer extends Component {
 
   /** @type {MediaQueryList} */
   #modalQuery = window.matchMedia(`(max-width: ${MODAL_BREAKPOINT - 1}px)`);
+
+  /**
+   * @returns {boolean} Whether the drawer opens as a modal dialog: always when
+   * the `modal` attribute is set, otherwise only below the modal breakpoint.
+   */
+  get #isModal() {
+    return this.hasAttribute('modal') || this.#modalQuery.matches;
+  }
 
   /**
    * @returns {boolean} Whether the drawer is currently open.
@@ -79,7 +93,7 @@ export class ThemeDrawer extends Component {
    */
   #onRestore() {
     const { panel } = this.refs;
-    if (this.#modalQuery.matches) {
+    if (this.#isModal) {
       lockScroll(panel);
     }
 
@@ -147,6 +161,8 @@ export class ThemeDrawer extends Component {
    */
   #onModalBreakpointChange = () => {
     if (!this.isOpen) return;
+    // Always-modal drawers keep the same dialog mode at every width.
+    if (this.hasAttribute('modal')) return;
 
     const { panel } = this.refs;
     const nestedDialog = this.#getOpenNestedDialog();
@@ -160,7 +176,7 @@ export class ThemeDrawer extends Component {
     panel.close();
     removeTrapFocus();
 
-    if (this.#modalQuery.matches) {
+    if (this.#isModal) {
       lockScroll(panel);
       panel.showModal();
     } else {
@@ -231,7 +247,7 @@ export class ThemeDrawer extends Component {
 
     this.#previouslyFocused = /** @type {HTMLElement | null} */ (document.activeElement);
 
-    if (this.#modalQuery.matches) {
+    if (this.#isModal) {
       lockScroll(panel);
       panel.showModal();
     } else {
@@ -268,7 +284,7 @@ export class ThemeDrawer extends Component {
     // In modal mode, dialogs live in the browser's top layer where z-index
     // is ignored — stacking follows showModal() call order. Re-calling
     // showModal() moves this dialog to the top of the stack.
-    if (this.#modalQuery.matches && panel.open) {
+    if (this.#isModal && panel.open) {
       lockScroll(panel);
       panel.close();
       panel.showModal();
@@ -337,7 +353,7 @@ export class ThemeDrawer extends Component {
     // closing the dialog, and restoring focus can each move the root scroller,
     // leaving the shopper at the top of the page instead of where they were
     // browsing. Capture the offset up front and re-apply it once the drawer is gone.
-    const closingAsModal = this.#modalQuery.matches;
+    const closingAsModal = this.#isModal;
     const scrollTopWhileLocked = closingAsModal ? getScrollTop() : null;
 
     this.removeAttribute('open');

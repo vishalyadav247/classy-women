@@ -1,3 +1,8 @@
+{%- doc -%}
+  Renders the footer copyright line: "© <current year>" followed by the custom
+  copyright text, or a link to the store name when the text is blank.
+  Optionally appends the "Powered by Shopify" link.
+{%- enddoc -%}
 
 {% assign block_settings = block.settings %}
 <div
@@ -14,7 +19,11 @@
 >
   <span class="footer-utilities__text">
     &copy; {{ 'now' | date: '%Y' }}
-    {{ shop.name | link_to: routes.root_url -}}
+    {% if block_settings.copyright_text != blank -%}
+      {{ block_settings.copyright_text | escape -}}
+    {%- else -%}
+      {{ shop.name | link_to: routes.root_url -}}
+    {%- endif -%}
     {%- if block_settings.show_powered_by -%}
       , {{ powered_by_link }}
     {%- endif -%}
@@ -37,6 +46,12 @@
       "id": "show_powered_by",
       "label": "t:settings.show_powered_by_shopify",
       "default": true
+    },
+    {
+      "type": "text",
+      "id": "copyright_text",
+      "label": "t:settings.copyright_text",
+      "info": "t:info.copyright_text"
     },
     {
       "type": "paragraph",

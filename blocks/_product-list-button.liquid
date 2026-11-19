@@ -1,11 +1,73 @@
 
 
-{% assign button_collection = closest.collection %}
-{% assign button_url = button_collection.url %}
+{%- doc -%}
+  "View all" button for product lists.
 
-{% if button_collection.products_count > section.settings.max_products %}
-  {% render 'button', link: button_url %}
+  Default behaviour: links to the closest collection and is only shown when that collection has
+  more products than the section's `max_products`.
+  - `link` (optional) replaces the collection URL.
+  - `show_always` shows the button regardless of the product count.
+  - Tabs mode (the section has `_product-list-tab` blocks): the button is always shown and, when
+    `link` is blank, links to the first tab with products (hidden when no tab has products). It is then wrapped in `ref="shopAll"`
+    so `assets/product-list-tabs.js` can point it at the active tab's collection.
+  Nothing is rendered when the label is blank.
+{%- enddoc -%}
+
+{%- liquid
+  assign button_url = block.settings.link
+  assign tab_blocks = section.blocks | where: 'type', '_product-list-tab'
+  assign follow_tab = false
+  assign show_button = false
+
+  if tab_blocks.size > 0
+    assign show_button = true
+    if button_url == blank
+      assign follow_tab = true
+      for tab in tab_blocks
+        assign tab_collection = tab.settings.collection
+        if tab_collection != blank and tab_collection.products_count > 0
+          assign button_url = tab_collection.url
+          break
+        endif
+      endfor
+      comment
+        No tab has products, so there is nothing to follow: hide the button instead of rendering an empty link.
+      endcomment
+      if button_url == blank
+        assign show_button = false
+      endif
+    endif
+  else
+    assign button_collection = closest.collection | default: section.settings.collection
+    if button_url == blank
+      assign button_url = button_collection.url
+    endif
+    if block.settings.show_always or button_collection.products_count > section.settings.max_products
+      assign show_button = true
+    endif
+  endif
+
+  if block.settings.label == blank
+    assign show_button = false
+  endif
+-%}
+
+{% if show_button %}
+  {% if follow_tab %}
+    <div class="product-list-button" ref="shopAll" data-follow-tab>
+      {% render 'button', link: button_url %}
+    </div>
+  {% else %}
+    {% render 'button', link: button_url %}
+  {% endif %}
 {% endif %}
+
+{% stylesheet %}
+  /* The wrapper only exists so the tabs component can find the link; it must not affect layout. */
+  .product-list-button {
+    display: contents;
+  }
+{% endstylesheet %}
 
 {% schema %}
 {
@@ -21,6 +83,18 @@
       "id": "label",
       "label": "t:settings.label",
       "default": "t:text_defaults.button_label"
+    },
+    {
+      "type": "url",
+      "id": "link",
+      "label": "t:settings.link",
+      "info": "t:info.product_list_button_link"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_always",
+      "label": "t:settings.show_always",
+      "default": false
     },
     {
       "type": "checkbox",

@@ -1,15 +1,22 @@
 {%- doc -%}
-  @param [limit] - {number}
-
-  The maximum number of items to display. Anything above shows as "99+".
+  Renders the cart count bubble used by cart icons.
 
   Colors: reads --cart-bubble-background / --cart-bubble-text from an ancestor. Falls back to a contrasting pair
   computed from the palette foreground when unset.
+
+  @param {number} [limit] - Show the count only while the item count is below this value. At or above it the
+    count is left empty and the bubble shows as a small dot.
+  @param {string} [id] - The id of the text span that cart buttons reference with aria-describedby. Defaults to
+    "cart-bubble-text". Pass a unique value when rendering a second bubble on the same page.
+
+  @example
+  {% render 'cart-bubble', limit: 100, id: 'floating-cart-bubble' %}
 {%- enddoc -%}
 
 {% liquid
   assign bubble_bg_fallback = settings.page_text_color
   assign bubble_text_fallback = settings.page_background_color
+  assign bubble_text_id = id | default: 'cart-bubble-text'
 %}
 
 <div
@@ -24,7 +31,7 @@
   <span class="cart-bubble__background"></span>
   <span
     ref="cartBubbleText"
-    id="cart-bubble-text"
+    id="{{ bubble_text_id }}"
     class="cart-bubble__text"
   >
     <span

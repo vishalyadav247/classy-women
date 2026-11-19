@@ -14,6 +14,7 @@ There is no build step, bundler, package manager, or test suite. Theme files are
 ## Hard rules
 
 - **Never open a browser for any work.** Don't use browser, Chrome or computer-use tools. Don't run `shopify theme open`, `shopify theme dev --open`, or `start`/`explorer`/`Start-Process` on a URL. `.claude/settings.json` denies these. Verify through code and `shopify theme check`, and give the user a list of things to check visually themselves.
+- **Stay inside the project directory.** Read and write only files under the repo root. Don't use `/tmp`, the scratchpad, or other folders outside the repo for theme work.
 - **Spec-driven.** Write no theme code without an approved spec and plan. Flow: `/spec-new <scope>` (design-analyst → `spec.md`) → `/spec-plan <NNN>` (theme-architect → `plan.md` + `tasks.md`) → `/spec-implement <NNN>` (theme-builder, then theme-reviewer). Each phase waits for the user's approval. Details are in `.claude/specs/README.md`.
 - **Reuse ladder.** Prefer, in this order: configure an existing section/block → extend it (backwards compatible, defaults unchanged) → add a new theme block inside an existing section → build a new section only when nothing fits, and justify it in `plan.md`.
 - **Theme vs app.** Build a feature in the theme only when it is easy and works effectively there (no secret keys, no backend, no third-party data). Otherwise leave it for a Shopify app and provide at most an `@app` block slot. Decisions are recorded in `.claude/specs/decisions.md`.

@@ -4,9 +4,26 @@
   if block.settings.image_position == 'contain'
     assign unset_image_tag = true
   endif
+
+  assign fallback_image = blank
+  assign alt_text_fallback = blank
+
+  if block.settings.use_collection_image
+    assign context_collection = closest.collection | default: collection
+
+    if block.settings.image == blank
+      assign fallback_image = context_collection.featured_image
+    endif
+
+    assign alt_text_fallback = context_collection.title | default: page.title
+  endif
 %}
 
-{% render 'media', unset_image_tag: unset_image_tag %}
+{% render 'media',
+  unset_image_tag: unset_image_tag,
+  fallback_image: fallback_image,
+  alt_text_fallback: alt_text_fallback
+%}
 
 {% schema %}
 {
@@ -33,6 +50,20 @@
       "type": "image_picker",
       "id": "image",
       "label": "t:settings.image",
+      "visible_if": "{{ block.settings.media_type == 'image' }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "use_collection_image",
+      "label": "t:settings.use_collection_image",
+      "default": false,
+      "visible_if": "{{ block.settings.media_type == 'image' }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "hide_when_empty",
+      "label": "t:settings.hide_when_empty",
+      "default": false,
       "visible_if": "{{ block.settings.media_type == 'image' }}"
     },
     {

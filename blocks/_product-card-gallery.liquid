@@ -1,38 +1,56 @@
+{%- doc -%}
+  Product card media: image gallery, status badge (snippet `product-badge`), quick add and an
+  `@app` block slot (for example a wishlist heart) in the top-right corner of the media.
+{%- enddoc -%}
 
+{% liquid
+  assign product = closest.product
+  assign block_settings = block.settings
 
-{% assign product = closest.product %}
+  assign has_badges = false
+  assign badge_markup = ''
+  if product != blank and block_settings.show_badges
+    capture badge_markup
+      render 'product-badge', product: product, variant: product.selected_variant, style: 'card'
+    endcapture
+    if badge_markup contains 'data-badge-type'
+      assign has_badges = true
+    endif
+  endif
+
+  capture app_blocks
+    content_for 'blocks', closest.product: product
+  endcapture
+
+  assign indicator_style = ''
+  if block_settings.show_indicator
+    assign indicator_style = '--indicator-thickness: [t]px; --indicator-gap: [g]px; --indicator-color: [c]; --indicator-track-color: [tc];'
+    assign indicator_style = indicator_style | replace: '[t]', block_settings.indicator_thickness | replace: '[g]', block_settings.indicator_gap | replace: '[c]', block_settings.indicator_color | replace: '[tc]', block_settings.indicator_track_color
+  endif
+%}
 
 {% capture children %}
   {% unless product == blank %}
-    {%- if product.available == false or product.compare_at_price > product.price -%}
-      <div
-        class="product-badges product-badges--{{ settings.badge_position }}"
-        style="
-            --badge-border-radius: {{ settings.badge_corner_radius }}px;
-            --badge-font-family: var(--font-{{ settings.badge_font_family }}--family); --badge-font-weight: var(--font-{{ settings.badge_font_family }}--weight); --badge-text-transform: {{ settings.badge_text_transform }};
-        "
-      >
-        <div
-          class="
-            product-badges__badge product-badges__badge--rectangle
-            {% if product.available == false %} color-custom-badge-sold-out{% elsif product.compare_at_price > product.price %} color-custom-badge-sale{% endif %}
-          "
-        >
-          {%- if product.available == false -%}
-            {{ 'content.product_badge_sold_out' | t }}
-          {%- elsif product.compare_at_price > product.price -%}
-            {{ 'content.product_badge_sale' | t }}
-          {%- endif -%}
-        </div>
-      </div>
-    {%- endif -%}
+    {{ badge_markup }}
     {% if product.available and settings.quick_add or settings.mobile_quick_add %}
       {% render 'quick-add', product: product, section_id: section.id %}
     {% endif %}
   {% endunless %}
+  {%- if app_blocks != blank -%}
+    <div class="card-gallery__app-slot">{{ app_blocks }}</div>
+  {%- endif -%}
 {% endcapture %}
 
-{% render 'card-gallery', children: children %}
+{% render 'card-gallery',
+  children: children,
+  has_badges: has_badges,
+  image_fit: block_settings.image_fit,
+  media_background: block_settings.media_background_color,
+  show_indicator: block_settings.show_indicator,
+  indicator_style: indicator_style,
+  allow_nested: block_settings.swipe_in_carousels,
+  neutral_placeholder: block_settings.neutral_placeholder
+%}
 
 {% # Title for the zoomed out grid view %}
 <h3 class="product-grid-view-zoom-out--details">
@@ -46,10 +64,34 @@
 {% render 'product-card-gallery-zoom-details-styles' %}
 {% render 'product-badges-styles' %}
 
+{% stylesheet %}
+  /* App block slot (e.g. a wishlist heart), top-right of the media with the same inset as the badge */
+  .card-gallery__app-slot {
+    --app-slot-inset: max(var(--padding-xs), calc((var(--border-radius) + var(--padding-xs)) * (1 - cos(45deg))));
+
+    position: absolute;
+    top: calc(var(--app-slot-inset) + var(--padding-block-start));
+    inset-inline-end: calc(var(--app-slot-inset) + var(--padding-inline-end));
+    z-index: var(--layer-raised);
+    display: flex;
+    align-items: flex-start;
+    gap: var(--gap-xs);
+  }
+
+  [product-grid-view='zoom-out'] .card-gallery__app-slot {
+    display: none;
+  }
+{% endstylesheet %}
+
 {% schema %}
 {
   "name": "t:names.product_image",
   "tag": null,
+  "blocks": [
+    {
+      "type": "@app"
+    }
+  ],
   "settings": [
     {
       "type": "paragraph",
@@ -68,6 +110,10 @@
           "label": "t:options.portrait"
         },
         {
+          "value": "tall",
+          "label": "t:options.portrait_tall"
+        },
+        {
           "value": "square",
           "label": "t:options.square"
         },
@@ -79,6 +125,93 @@
       "default": "portrait",
       "label": "t:settings.aspect_ratio",
       "info": "t:info.aspect_ratio_adjusted"
+    },
+    {
+      "type": "select",
+      "id": "image_fit",
+      "label": "t:settings.media_fit",
+      "options": [
+        {
+          "value": "cover",
+          "label": "t:options.cover"
+        },
+        {
+          "value": "contain",
+          "label": "t:options.contain"
+        }
+      ],
+      "default": "cover"
+    },
+    {
+      "type": "color",
+      "id": "media_background_color",
+      "label": "t:settings.media_background"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_badges",
+      "label": "t:settings.show_badges",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "neutral_placeholder",
+      "label": "t:settings.neutral_placeholder",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "swipe_in_carousels",
+      "label": "t:settings.swipe_in_carousels",
+      "info": "t:info.swipe_in_carousels",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "t:content.image_position_line"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_indicator",
+      "label": "t:settings.show_image_indicator",
+      "info": "t:info.image_indicator",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "indicator_thickness",
+      "label": "t:settings.thickness",
+      "min": 1,
+      "max": 6,
+      "step": 1,
+      "unit": "px",
+      "default": 2,
+      "visible_if": "{{ block.settings.show_indicator }}"
+    },
+    {
+      "type": "color",
+      "id": "indicator_color",
+      "label": "t:settings.indicator_color",
+      "default": "#000000",
+      "visible_if": "{{ block.settings.show_indicator }}"
+    },
+    {
+      "type": "color",
+      "id": "indicator_track_color",
+      "label": "t:settings.indicator_track_color",
+      "default": "#E0E0E0",
+      "visible_if": "{{ block.settings.show_indicator }}"
+    },
+    {
+      "type": "range",
+      "id": "indicator_gap",
+      "label": "t:settings.indicator_gap",
+      "min": 0,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "default": 8,
+      "visible_if": "{{ block.settings.show_indicator }}"
     },
     {
       "type": "header",

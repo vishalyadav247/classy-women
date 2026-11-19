@@ -43,6 +43,21 @@ Practical test for each feature: it needs no secret keys, no server or database,
 | A20 | Key features and accordion content | Key features from the product metafield `custom.key_features` (list). "Why you'll love it" uses the product description. Details and More info use metafields. "Shipping & returns" is a shared rich-text setting. | 006 |
 | A21 | "Important update" band | Home only (a section in the home template) | 004 |
 
+## Spec 002 implementation notes (product card, 2026-11-19)
+- **A3 badges:** implemented in the new snippet `snippets/product-badge.liquid` (shared with 006's PDP gallery). Low-stock threshold, "Sale" pill toggle and card badge style (text or filled) are theme settings; labels are locale keys; custom text comes from metafield `custom.badge`.
+- **A4 rounding:** "NN% OFF" uses nearest-whole rounding, hidden below 1%. With a "From" price, compare-at and % OFF come from the lowest-priced variant.
+- **Theme settings, not block settings,** for everything the swatch-click response (`section-rendering-product-card`) must reproduce: badges, From price, compare-at, % OFF label, swatch limit (+N) and colour option names. Card look (3:4 ratio, contain fit, grey media background, position line, photo swatches, one-line title) stays in block settings.
+- **A1 wishlist:** not built. Card media has an `@app` block slot top-right; the badge sits top-left.
+- **Price context:** only real product cards get the card price behaviour. The page's own product, the product a section is set to (featured product information), quick add and predictive search keep Horizon's price output.
+
+## Spec 005 implementation notes (collection page, 2026-11-19)
+- **A12 pagination:** `main-collection` "Load more products without page reload" (on) + "Load more products" = `"Load more" button` (or on scroll); off = numbered pages. `products_per_page` (default 24) now applies in every mode. Load more appends via Section Rendering (`PaginatedList.loadMore()`), keeps sort/filters and pushes `?page=N`.
+- **A13 promo tiles:** private block `_collection-promo-tile` in `main-collection`. Position = "show after product N" + side left/right, size 2×1 (default) or 2×2, image or video. Rendered only in the Grid layout, on page 1, when product N+1 exists; section setting "Show promo tiles while filters are active" (default on). Blank media = nothing on the storefront. Template ships 3 tiles (after 4 left, 12 right, 16 left) with blank media/words; the merchant adds the images and copy.
+- **A14 filters:** new `filters` style "Drawer" (toolbar: centred count, Sort by, Filter (n)). Drawer side right (default) or left, always modal with overlay. Apply mode instant (default) or Apply button. Chips "× value", Clear all at 2+ chips. Horizontal/vertical styles unchanged.
+- **Banner:** `media-with-content` with custom vw height (20vw desktop / 75vw mobile), `_media-without-appearance` "use collection image" + "hide when empty" (text spans full width when no image), new public `breadcrumb` block. 007 V1 reuses the same section with page text.
+- **SEO text (C5):** new public `read-more-text` block reads the collection metafield **`custom.seo_text` (type: rich text)** when set, else the block's shared rich text; 4 lines collapsed, Read more / Read less. **The merchant must create this metafield definition** (Settings → Custom data → Collections, namespace and key `custom.seo_text`, rich text) and fill it per collection; without it the shared text shows, and with neither the section is hidden.
+- **Explore our categories:** `collection-list` carousel (portrait 4:5, 4 columns, no desktop peek, hover zoom, hidden when no collections are selected). "View products" is a `button` whose link is the dynamic source `{{ closest.collection.url }}`; the whole card is also a link.
+
 ## Shoppable video proposal (A7–A9): ON HOLD (user is discussing with the merchant; specs 003 and 007 stay Draft)
 
 **Why the theme rather than a video app.** The reference site's popup probably comes from a video-commerce app (Tolstoy, Whatmore, Firework or similar). Those cost a monthly fee and load a heavy third-party script on every page, and their player sits outside your theme's styling and cart. Everything the design shows (tiles, rows, popup, add to cart) can be built from Shopify data:

@@ -1,6 +1,19 @@
 
 {% render 'button', link: block.settings.link %}
 
+{% stylesheet %}
+  .button-unstyled--underline {
+    overflow: visible;
+    text-decoration-line: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.25em;
+  }
+
+  .button-unstyled--underline:hover {
+    text-decoration-thickness: 2px;
+  }
+{% endstylesheet %}
+
 {% schema %}
 {
   "name": "t:names.button",
@@ -82,6 +95,13 @@
       "id": "link_text_color",
       "label": "t:settings.link_text_color",
       "placeholder": "t:settings.default",
+      "visible_if": "{{ block.settings.style_class == 'button-unstyled' }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "link_underline",
+      "label": "t:settings.link_underline",
+      "default": false,
       "visible_if": "{{ block.settings.style_class == 'button-unstyled' }}"
     },
     {
